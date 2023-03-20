@@ -1,10 +1,27 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.example.project_sound_classification.MainActivity">
+    tools:context="com.example.dangersound.MainActivity">
+
+    <!--메뉴바에 오른쪽 상단 위 버튼 클릭하면 메뉴(알림우선순위, 로그, 설정, 이용안내)가 나타남-->
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/Priorty"
         android:orderInCategory="100"
-        android:title="@string/action_settings"
+        android:title="알림우선순위"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/Log"
+        android:orderInCategory="100"
+        android:title="로그"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/Settings"
+        android:orderInCategory="100"
+        android:title="설정"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/ServiceInfo"
+        android:orderInCategory="100"
+        android:title="이용안내"
         app:showAsAction="never" />
 </menu>
