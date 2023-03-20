@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.VIBRATE" />
+
 
     <application
         android:allowBackup="true"
@@ -11,17 +13,50 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Project_Sound_Classification"
         tools:targetApi="31">
+
+        <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value=".MainActivity" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Project_Sound_Classification.NoActionBar">
+            android:theme="@style/Theme.Project_Sound_Classification">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-    </application>
 
+        <activity
+            android:name=".PriorityActivity"
+            android:exported="false"
+            android:label="activity_priority"
+            android:parentActivityName=".MainActivity">
+        </activity>
+
+        <activity
+            android:name=".LogActivity"
+            android:exported="false"
+            android:label="activity_log"
+            android:parentActivityName=".MainActivity">
+        </activity>
+
+        <activity
+            android:name=".SettingActivity"
+            android:exported="false"
+            android:label="activity_setting"
+            android:parentActivityName=".MainActivity">
+        </activity>
+
+        <activity
+            android:name=".ServiceInfoActivity"
+            android:exported="false"
+            android:label="activity_serviceinfo"
+            android:parentActivityName=".MainActivity">
+        </activity>
+
+    </application>
 </manifest>
