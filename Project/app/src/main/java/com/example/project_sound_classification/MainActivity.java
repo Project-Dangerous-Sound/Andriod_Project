@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
-        getSupportActionBar().setDisplayShowTitleEnabled(false); // 툴바 글자 안보이게
+        getSupportActionBar().setDisplayShowTitleEnabled(false); // 툴바 글자 안보이게 만들어주는 코드
     }
 
     // 이 코드는 Vibrator 개체(아직 존재하지 않는 경우)를 만들고,
