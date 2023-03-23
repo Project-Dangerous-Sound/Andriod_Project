@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.example.dangersound.MainActivity">
+    tools:context="com.example.project_sound_classification.MainActivity">
 
     <!--메뉴바에 오른쪽 상단 위 버튼 클릭하면 메뉴(알림우선순위, 로그, 설정, 이용안내)가 나타남-->
     <item
@@ -24,4 +24,9 @@
         android:orderInCategory="100"
         android:title="이용안내"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/app_bar_switch"
+        android:title="Switch"
+        app:actionLayout="@layout/switch_item"
+        app:showAsAction="always" />
 </menu>
