@@ -3,18 +3,18 @@ package com.example.project_sound_classification;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -25,10 +25,14 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.project_sound_classification.databinding.ActivityMainBinding;
 
+import org.jetbrains.annotations.Nullable;
+
 public class MainActivity extends AppCompatActivity {
+    private Vibrator vibrator;
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
+
 
     //-----------------------------------------------------------------------------------------------------------------------------
     @Override
@@ -38,44 +42,37 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        //setSupportActionBar(binding.toolbar);
-
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
-        // Toolbar에 작성된 기본 글자들 안보이게끔 해주는 코드
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        //  1+setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-        //toolbar.setNavigationIcon(R.drawable.ic_toolbar);
-        toolbar.setTitle("");
-        toolbar.setSubtitle("");
-        //toolbar.setLogo(R.drawable.ic_toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false); // 툴바 글자 안보이게 만들어주는 코드
+    }
 
-
-        // 스위치 버튼 클릭 시, 진동 On/Off
-        Switch switchButton = findViewById(R.id.switch_button);
-        Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-
-        switchButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    // Turn on vibration
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
-
-                    } else {
-                        vibrator.vibrate(500);
-                    }
-                } else {
-                    // Turn off vibration
-                    vibrator.cancel();
-                }
+    // 이 코드는 Vibrator 개체(아직 존재하지 않는 경우)를 만들고,
+    // 스위치 버튼이 선택된 경우(즉, 상태가 "켜짐"인 경우)에만 짧은 진동(100밀리초)을 트리거합니다.
+    // 진동을 트리거해야 하는 이벤트가 발생할 때마다 vibrate() 메서드를 호출합니다.
+    // 예를 들어, 버튼을 클릭할 때 진동하도록 하려면 다음 코드를 OnClickListener에 추가할 수 있습니다.
+    private void vibrate() {
+        Button button = findViewById(R.id.app_bar_switch);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                vibrate();
+                // add more code here to handle the button click
             }
         });
+
+        if (vibrator == null) {
+            vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        }
+        if (vibrator.hasVibrator() && ((Switch)findViewById(R.id.app_bar_switch)).isChecked()) {
+            vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE));
+        }
     }
+
+
+
 
     //-----------------------------------------------------------------------------------------------------------------------------
     @Override
