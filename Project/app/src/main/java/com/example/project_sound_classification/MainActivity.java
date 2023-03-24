@@ -3,10 +3,12 @@ package com.example.project_sound_classification;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -44,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Toolbar에 작성된 기본 글자들 안보이게끔 해주는 코드
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        //  1+setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         //toolbar.setNavigationIcon(R.drawable.ic_toolbar);
         toolbar.setTitle("");
