@@ -13,7 +13,7 @@ import java.util.*;
 
 public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ItemViewHolder>
         implements ItemTouchHelperListener{
-    ArrayList<Person> items = new ArrayList<>();
+    ArrayList<Soundlist> items = new ArrayList<>();
     public ListAdapter(){
     }
     ItemViewHolder holdview;
@@ -42,25 +42,25 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ItemViewHolder
     }
 
 
-    public Person get(int index) {return items.get(index);}
+    public Soundlist get(int index) {return items.get(index);}
     public int getPriority(int index) {return items.get(index).getPriority();}
     public void  setPriority(int index, int toPosition) {this.items.get(index).setPriority(toPosition);}
 
-    public void addItem(Person person){
-        items.add(person);
+    public void addItem(Soundlist soundlist){
+        items.add(soundlist);
     }
 
     @Override
     public boolean onItemMove(int from_position, int to_position) {
         //이동할 객체 저장
-        Person person = items.get(from_position);
+        Soundlist soundlist = items.get(from_position);
         ItemViewHolder itemViewHolder = list.get(from_position);
         //이동할 객체 삭제
         items.remove(from_position);
         list.remove(from_position);
 
         //이동하고 싶은 position에 추가
-        items.add(to_position, person);
+        items.add(to_position, soundlist);
         list.add(to_position, itemViewHolder);
         items.get(to_position).priority = to_position + 1;
         int a = from_position - to_position;
@@ -69,8 +69,8 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ItemViewHolder
         } else if (a > 0) {
             items.get(to_position + 1).priority += 1;
         }
-        for (Person person1 : items) {
-            Log.v("확인: ", Integer.toString(person1.priority) + " " + person1.name);
+        for (Soundlist soundlist1 : items) {
+            Log.v("확인: ", Integer.toString(soundlist1.priority) + " " + soundlist1.name);
         }
         //Adapter에 데이터 이동알림
         notifyItemMoved(from_position, to_position);
@@ -98,10 +98,10 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ItemViewHolder
             list_image = itemView.findViewById(R.id.list_image);
         }
 
-        public void onBind(Person person) {
-            list_name.setText(person.getName());
-            list_age.setText(String.valueOf(person.getPriority()));
-            list_image.setImageResource(person.getImage());
+        public void onBind(Soundlist sounlist) {
+            list_name.setText(sounlist.getName());
+            list_age.setText(String.valueOf(sounlist.getPriority()));
+            list_image.setImageResource(sounlist.getImage());
         }
     }
 }
