@@ -8,6 +8,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.util.*;
 
 
@@ -18,6 +22,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ItemViewHolder
     }
     ItemViewHolder holdview;
     List<ItemViewHolder> list = new ArrayList<>();
+    String soundname[] = new String[7];
 
     @NonNull
     @Override
@@ -51,7 +56,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ItemViewHolder
     }
 
     @Override
-    public boolean onItemMove(int from_position, int to_position) {
+    public boolean onItemMove(int from_position, int to_position) throws JSONException, IOException {
         //이동할 객체 저장
         Soundlist soundlist = items.get(from_position);
         ItemViewHolder itemViewHolder = list.get(from_position);
@@ -69,15 +74,15 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ItemViewHolder
         } else if (a > 0) {
             items.get(to_position + 1).priority += 1;
         }
+        int index = 0;
         for (Soundlist soundlist1 : items) {
             Log.v("확인: ", Integer.toString(soundlist1.priority) + " " + soundlist1.name);
+            soundname[index] = soundlist1.name;
+            index++;
         }
         //Adapter에 데이터 이동알림
         notifyItemMoved(from_position, to_position);
-        for (int i = 0; i < items.size(); i++) {
-            list.get(i).onBind(items.get(i));
-            Log.v("확인: ", list.get(i).list_age.getText() + " " + list.get(i).list_name.getText());
-        }
+        HomeScreen.singleton.priorityjson.setPriority(soundname);
         return true;
     }
     @Override

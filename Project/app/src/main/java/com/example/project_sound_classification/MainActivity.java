@@ -1,38 +1,95 @@
 package com.example.project_sound_classification;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
+import androidx.annotation.RequiresPermission;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.project_sound_classification.databinding.ActivityMainBinding;
-
+import okhttp3.*;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.*;
+import retrofit2.Response;
+import retrofit2.converter.gson.GsonConverterFactory;
 import org.jetbrains.annotations.Nullable;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.UnknownHostException;
 
 public class MainActivity extends AppCompatActivity {
     private Vibrator vibrator;
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
+    private AudioRecoding audioRecoding;
 
+    private void startRecoding(){
+        audioRecoding = new AudioRecoding();
+        audioRecoding.startRecording(getExternalFilesDir(null).getAbsolutePath(), "recoding", this);
+        Log.v("녹음", "녹음 시작");
+    }
+
+    private void stopRecoding(){
+        audioRecoding.stopRecode();
+        String audiopath = audioRecoding.getOutputpath();
+        Log.v("녹음", "녹음 중지");
+        uploadAudioFile(audiopath);
+    }
+
+    private void uploadAudioFile(String audioFilePath) {
+        Log.v("BackEnd", "서버로 .wav파일 보냄");
+        File audioFile = new File(audioFilePath);
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("audio/wav"), audioFile);
+        MultipartBody.Part audioPart = MultipartBody.Part.createFormData("audio", audioFile.getName(), requestBody);
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://10.0.2.2:5000/upload_audio/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        MyApi myApi = retrofit.create(MyApi.class);
+        Call<ApiResponse> call = myApi.uploadAudio(audioPart);
+        call.enqueue(new Callback<ApiResponse>() {
+
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                response.message();
+                Log.v("확인", "서버에서 받음");
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                Log.v("확인", t.getMessage());
+            }
+        });
+        audioFile.delete();
+    }
 
     //-----------------------------------------------------------------------------------------------------------------------------
     @Override
@@ -45,8 +102,69 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+        int permission = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO);
+        int permission1 = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        int permission2 = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE);
+        int permissing3 = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.INTERNET);
+        // 권한이 열려있는지 확인
+        if (permission == PackageManager.PERMISSION_DENIED || permission1 == PackageManager.PERMISSION_DENIED
+                || permission2 == PackageManager.PERMISSION_DENIED || permissing3 == PackageManager.PERMISSION_DENIED) {
+            // 마쉬멜로우 이상버전부터 권한을 물어본다
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                // 권한 체크(READ_PHONE_STATE의 requestCode를 1000으로 세팅
+                requestPermissions(
+                        new String[]{Manifest.permission.RECORD_AUDIO,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                Manifest.permission.READ_EXTERNAL_STORAGE,
+                                Manifest.permission.INTERNET},
+                        1000);
+            }
+            return;
+        }
 
+        Button recodeingstartbutton = (Button) findViewById(R.id.button);
+        Button recodingstopbutton = (Button) findViewById(R.id.button2);
+        recodeingstartbutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startRecoding();
+            }
+        });
+        recodingstopbutton.setOnClickListener((new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                stopRecoding();
+            }
+        }));
         getSupportActionBar().setDisplayShowTitleEnabled(false); // 툴바 글자 안보이게 만들어주는 코드
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grandResults) {
+        // READ_PHONE_STATE의 권한 체크 결과를 불러온다
+        super.onRequestPermissionsResult(requestCode, permissions, grandResults);
+        if (requestCode == 1000) {
+            boolean check_result = true;
+
+            // 모든 퍼미션을 허용했는지 체크
+            for (int result : grandResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    check_result = false;
+                    break;
+                }
+            }
+
+            // 권한 체크에 동의를 하지 않으면 안드로이드 종료
+            if (check_result == true) {
+
+            } else {
+                finish();
+            }
+        }
     }
 
     // 이 코드는 Vibrator 개체(아직 존재하지 않는 경우)를 만들고,
@@ -55,6 +173,8 @@ public class MainActivity extends AppCompatActivity {
     // 예를 들어, 버튼을 클릭할 때 진동하도록 하려면 다음 코드를 OnClickListener에 추가할 수 있습니다.
     private void vibrate() {
         Button button = findViewById(R.id.app_bar_switch);
+        Button recodeingstartbutton = findViewById(R.id.button);
+        Button recodingstopbutton = findViewById(R.id.button2);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -63,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
         if (vibrator == null) {
             vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         }
@@ -70,7 +191,9 @@ public class MainActivity extends AppCompatActivity {
             vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE));
         }
     }
+    private void Recoding(){
 
+    }
 
 
 
@@ -137,6 +260,7 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
             return true;
         }
+
         return super.onOptionsItemSelected(item);
 
     }

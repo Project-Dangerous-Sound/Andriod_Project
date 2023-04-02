@@ -6,6 +6,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.json.JSONException;
+
+import java.io.IOException;
+
 
 public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
     ListAdapter items;
@@ -42,7 +46,13 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
     @Override
     public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-        return listener.onItemMove(viewHolder.getAdapterPosition(),target.getAdapterPosition());
+        try {
+            return listener.onItemMove(viewHolder.getAdapterPosition(),target.getAdapterPosition());
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
