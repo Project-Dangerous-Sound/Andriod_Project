@@ -30,6 +30,7 @@
             </intent-filter>
         </activity>
 
+        <!-- 메인 메뉴(알림우선순위, 로그, 설정, 이용안내 -->>
         <activity
             android:name=".PriorityActivity"
             android:exported="false"
@@ -56,6 +57,14 @@
             android:exported="false"
             android:label="activity_serviceinfo"
             android:parentActivityName=".MainActivity">
+        </activity>
+
+        <!-- 서브(알림우선순위 → 개발자정보 -->>
+        <activity
+            android:name=".DeveloperInfo"
+            android:exported="false"
+            android:label="개발자 정보"
+            android:parentActivityName=".ServiceInfoActivity">
         </activity>
 
     </application>
