@@ -11,5 +11,5 @@ public class ApiResponse {
     private boolean success;
 
     @SerializedName("messeage")
-    private String message;
+    private float[] message;
 }
