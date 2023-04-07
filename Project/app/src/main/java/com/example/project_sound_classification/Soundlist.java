@@ -4,6 +4,7 @@ public class Soundlist {
     int image;
     String name;
     int priority;
+    int color;
 
     public Soundlist(int image, String name, int priority){
         this.image = image;
@@ -31,4 +32,7 @@ public class Soundlist {
     public void setPriority(int priority) {
         this.priority = priority;
     }
+
+    public int getColor(){return color;}
+    public void setColor(int color) { this.color = color; }
 }
