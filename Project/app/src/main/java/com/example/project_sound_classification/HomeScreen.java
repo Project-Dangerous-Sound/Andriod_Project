@@ -9,10 +9,18 @@ import androidx.fragment.app.Fragment;
 
 import com.example.project_sound_classification.databinding.HomeScreenBinding;
 
+import org.json.JSONException;
+
+import org.json.*;
+import android.content.res.*;
+
+import java.io.IOException;
+
 public class HomeScreen extends Fragment {
 
     private HomeScreenBinding binding;
-
+    static Singleton singleton;
+    static Json priorityjson;
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container,
@@ -20,6 +28,7 @@ public class HomeScreen extends Fragment {
     ) {
 
         binding = HomeScreenBinding.inflate(inflater, container, false);
+        if (singleton == null) singleton = new Singleton();
         return binding.getRoot();
 
     }

@@ -1,38 +1,202 @@
 package com.example.project_sound_classification;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
+import androidx.annotation.RequiresPermission;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.example.project_sound_classification.audiofeature.MFCC;
 import com.example.project_sound_classification.databinding.ActivityMainBinding;
+import com.example.project_sound_classification.librosafeature.WavFile;
+import com.example.project_sound_classification.librosafeature.WavFileException;
 
+import okhttp3.*;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.*;
+import retrofit2.Response;
+import retrofit2.converter.gson.GsonConverterFactory;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONException;
+import org.w3c.dom.Node;
+import org.tensorflow.lite.DataType;
+import org.tensorflow.lite.Interpreter;
+import org.tensorflow.lite.support.common.FileUtil;
+import org.tensorflow.lite.support.common.TensorProcessor;
+import org.tensorflow.lite.support.common.ops.NormalizeOp;
+import org.tensorflow.lite.support.label.TensorLabel;
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
+import java.io.File;
+import java.io.IOException;
+import java.math.RoundingMode;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.text.DecimalFormat;
+import java.nio.MappedByteBuffer;
 public class MainActivity extends AppCompatActivity {
-    private Vibrator vibrator;
+    static class Mapping implements Comparable<Mapping>{
+        float value;
+        int index;
 
+        public Mapping(float value, int index){
+            this.value = value;
+            this.index = index;
+        }
+
+        @Override
+        public int compareTo(Mapping o){
+            return Float.compare(o.value, this.value);
+        }
+    }
+    private Vibrator vibrator;
+    private TextView textView;
+    private MFCC mfcc;
+    private LinearLayout bacground;
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
+    private AudioRecoding audioRecoding;
+    private Map<Integer, String> map;
+    private  DataPreprocessing dataPreprocessing;
+    private float standfloat = 0.4f;
+    private float priority_weight[] = {1.0f, 0.8f, 0.6f, 0.4f, 0.2f, 0f};
+    private int color[] = {Color.DKGRAY, Color.TRANSPARENT, Color.CYAN, Color.MAGENTA, Color.RED, Color.YELLOW};
 
+    private int mNumFrames;
+    private int mSampleRate;
+    private int mChannels;
+    private void mapping(){
+        map.put(0, "차경적");
+        map.put(1,"개짓는소리");
+        map.put(2, "사이렌");
+        map.put(3,"화재경보");
+        map.put(4, "도난경보");
+        map.put(5, "비상경보");
+    }
+    private float[] creatre_MFCC(String wav_path) throws IOException, WavFileException {
+
+        double spectrum[] = dataPreprocessing.spectrumprocesing(wav_path);
+        float meanMFCCValues[] = dataPreprocessing.mfccprocesing(spectrum);
+
+        return meanMFCCValues;
+    }
+    private void Tensor(float [] meanMFCC){
+
+    }
+    private void Weight_calc(float[] softmax) throws JSONException {
+        List<Mapping> list = new ArrayList<>();
+        for (int i = 0;i<softmax.length;i++)
+            if (softmax[i] >= standfloat) {
+                list.add(new Mapping(softmax[i], i));
+                Log.v("통과", Integer.toString(i) + " " + Float.toString(softmax[i]) + map.get(i));
+            }
+        String priorityName[] = HomeScreen.singleton.priorityjson.getPriority();
+
+        for(int i = 0;i<6;i++){
+            for (Mapping mapping: list){
+                if (map.get(mapping.index).equals(priorityName[i])){
+                    mapping.value += priority_weight[i];
+                }
+            }
+        }
+        Collections.sort(list);
+        Action(list.get(0).index);
+    }
+
+    private void Action(int index){
+        bacground.setBackgroundColor(color[index]);
+        Log.v("위험한 소리: ", map.get(index));
+        Vibrator vibrator1 = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        vibrator1.vibrate(VibrationEffect.createOneShot(1000, 50));
+    }
+
+    private void startRecoding(){
+        Log.v("녹음", "녹음 시작");
+        audioRecoding = new AudioRecoding();
+        audioRecoding.startRecording(getExternalFilesDir(null).getAbsolutePath(), "recoding", this);
+        Log.v("녹음", "녹음 시작");
+    }
+
+    private void stopRecoding() throws JSONException, IOException, WavFileException {
+        audioRecoding.stopRecode();
+        String audiopath = audioRecoding.getOutputpath();
+        Log.v("녹음", "녹음 중지");
+        uploadAudioFile(audiopath);
+    }
+    private void playAudio(File file) {
+        MediaPlayer mediaPlayer = new MediaPlayer();
+
+        try {
+            mediaPlayer.setDataSource(file.getAbsolutePath());
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+    private void uploadAudioFile(String audioFilePath) throws JSONException, IOException, WavFileException {
+        Log.v("BackEnd", "서버로 .wav파일 보냄");
+        File audioFile = new File(audioFilePath);
+        RequestBody requestBody = RequestBody.create(MediaType.parse("audio/wav"), audioFile);
+        MultipartBody.Part audioPart = MultipartBody.Part.createFormData("audio", audioFile.getName(), requestBody);
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://10.0.2.2:5000/upload_audio/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        MyApi myApi = retrofit.create(MyApi.class);
+        Call<ApiResponse> call = myApi.uploadAudio(audioPart);
+        call.enqueue(new Callback<ApiResponse>() {
+
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                ApiResponse result = response.body();
+
+                Log.v("확인", "서버에서 받음");
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                Log.v("확인", t.getMessage());
+            }
+        });
+        float softmax[] = new float[6];
+        for (int i = 0;i<6;i++) softmax[i] = (float)Math.random();
+        Weight_calc(softmax);
+        float [] create = creatre_MFCC(audioFilePath);
+        for(float arr: create){
+            Log.v("MFCC", Float.toString(arr));
+        }
+    }
 
     //-----------------------------------------------------------------------------------------------------------------------------
     @Override
@@ -41,12 +205,91 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        try {
+            HomeScreen.singleton.setPriorityjson(new Json(this));
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        dataPreprocessing = new DataPreprocessing();
 
+        textView = findViewById(R.id.textview_first);
+        bacground = findViewById(R.id.background);
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
+        if (map == null){
+            map = new HashMap<>();
+            mapping();
+        }
+        int permission = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO);
+        int permission1 = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        int permission2 = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE);
+        int permissing3 = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.INTERNET);
+        // 권한이 열려있는지 확인
+        if (permission == PackageManager.PERMISSION_DENIED || permission1 == PackageManager.PERMISSION_DENIED
+                || permission2 == PackageManager.PERMISSION_DENIED || permissing3 == PackageManager.PERMISSION_DENIED) {
+            // 마쉬멜로우 이상버전부터 권한을 물어본다
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                // 권한 체크(READ_PHONE_STATE의 requestCode를 1000으로 세팅
+                requestPermissions(
+                        new String[]{Manifest.permission.RECORD_AUDIO,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                Manifest.permission.READ_EXTERNAL_STORAGE,
+                                Manifest.permission.INTERNET},
+                        1000);
+            }
+        }
+
+        Button recodeingstartbutton = (Button) findViewById(R.id.button);
+        Button recodingstopbutton = (Button) findViewById(R.id.button2);
+        recodeingstartbutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startRecoding();
+            }
+        });
+        recodingstopbutton.setOnClickListener((new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    stopRecoding();
+                } catch (JSONException | IOException | WavFileException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }));
         getSupportActionBar().setDisplayShowTitleEnabled(false); // 툴바 글자 안보이게 만들어주는 코드
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grandResults) {
+        // READ_PHONE_STATE의 권한 체크 결과를 불러온다
+        super.onRequestPermissionsResult(requestCode, permissions, grandResults);
+        if (requestCode == 1000) {
+            boolean check_result = true;
+
+            // 모든 퍼미션을 허용했는지 체크
+            for (int result : grandResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    check_result = false;
+                    break;
+                }
+            }
+
+            // 권한 체크에 동의를 하지 않으면 안드로이드 종료
+            if (check_result == true) {
+
+            } else {
+                finish();
+            }
+        }
     }
 
     // 이 코드는 Vibrator 개체(아직 존재하지 않는 경우)를 만들고,
@@ -55,6 +298,8 @@ public class MainActivity extends AppCompatActivity {
     // 예를 들어, 버튼을 클릭할 때 진동하도록 하려면 다음 코드를 OnClickListener에 추가할 수 있습니다.
     private void vibrate() {
         Button button = findViewById(R.id.app_bar_switch);
+        Button recodeingstartbutton = findViewById(R.id.button);
+        Button recodingstopbutton = findViewById(R.id.button2);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -63,6 +308,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
         if (vibrator == null) {
             vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         }
@@ -70,7 +316,9 @@ public class MainActivity extends AppCompatActivity {
             vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE));
         }
     }
+    private void Recoding(){
 
+    }
 
 
 
@@ -137,6 +385,7 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
             return true;
         }
+
         return super.onOptionsItemSelected(item);
 
     }

@@ -2,6 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name = "android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+
 
     <application
         android:allowBackup="true"
@@ -30,6 +40,7 @@
             </intent-filter>
         </activity>
 
+        <!-- 메인 메뉴(알림우선순위, 로그, 설정, 이용안내 -->>
         <activity
             android:name=".PriorityActivity"
             android:exported="false"
@@ -56,6 +67,14 @@
             android:exported="false"
             android:label="activity_serviceinfo"
             android:parentActivityName=".MainActivity">
+        </activity>
+
+        <!-- 서브(알림우선순위 → 개발자정보 -->>
+        <activity
+            android:name=".DeveloperInfo"
+            android:exported="false"
+            android:label="개발자 정보"
+            android:parentActivityName=".ServiceInfoActivity">
         </activity>
 
     </application>
