@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
         inBuffer.loadArray(meanMFCC, imgeShape);
         ByteBuffer inputBuffer1 = ByteBuffer.allocateDirect(1*120*80*1).order(ByteOrder.nativeOrder());
         ByteBuffer inputBuffer = inBuffer.getBuffer();
-
+        // 1 * 120 * 80 * 1
         for (int i = 0;i<120;i++){
             for (int j = 0;j<80;j++){
 /*                inputBuffer1.putFloat()*/
