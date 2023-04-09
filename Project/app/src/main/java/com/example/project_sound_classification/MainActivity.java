@@ -298,7 +298,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }));
-        getSupportActionBar().setDisplayShowTitleEnabled(false); // 툴바 글자 안보이게 만들어주는 코드
+        // getSupportActionBar().setDisplayShowTitleEnabled(false); 툴바 글자 안보이게 만들어주는 코드
+
+        getSupportActionBar().setTitle("위험한 소리 알리미"); // 제목 변경
 
         // 앱바의 색깔 바꾸는 코드
         // getWindow().setStatusBarColor(Color.DKGRAY);

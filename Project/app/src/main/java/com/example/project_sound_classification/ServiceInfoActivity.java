@@ -107,7 +107,7 @@ public class ServiceInfoActivity extends AppCompatActivity {
         button6.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "추가적인 질문사항은 추후에 추가 예정입니다.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "추가적인 질문 사항은 추후에 추가 예정", Toast.LENGTH_LONG).show();
             }
         });
 
