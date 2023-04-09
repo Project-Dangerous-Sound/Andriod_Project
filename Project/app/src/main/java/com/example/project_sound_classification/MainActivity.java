@@ -6,7 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.media.MediaPlayer;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
@@ -19,8 +19,6 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import androidx.annotation.RequiresPermission;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -33,10 +31,8 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import com.example.project_sound_classification.audiofeature.MFCC;
 import com.example.project_sound_classification.databinding.ActivityMainBinding;
-import com.example.project_sound_classification.librosafeature.WavFile;
-import com.example.project_sound_classification.librosafeature.WavFileException;
+import com.google.android.material.appbar.AppBarLayout;
 
 import okhttp3.*;
 import retrofit2.Call;
@@ -45,127 +41,34 @@ import retrofit2.*;
 import retrofit2.Response;
 import retrofit2.converter.gson.GsonConverterFactory;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONException;
-import org.w3c.dom.Node;
-import org.tensorflow.lite.DataType;
-import org.tensorflow.lite.Interpreter;
-import org.tensorflow.lite.support.common.FileUtil;
-import org.tensorflow.lite.support.common.TensorProcessor;
-import org.tensorflow.lite.support.common.ops.NormalizeOp;
-import org.tensorflow.lite.support.label.TensorLabel;
-import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.RoundingMode;
 import java.net.UnknownHostException;
-import java.util.*;
-import java.text.DecimalFormat;
-import java.nio.MappedByteBuffer;
+
 public class MainActivity extends AppCompatActivity {
-    static class Mapping implements Comparable<Mapping>{
-        float value;
-        int index;
-
-        public Mapping(float value, int index){
-            this.value = value;
-            this.index = index;
-        }
-
-        @Override
-        public int compareTo(Mapping o){
-            return Float.compare(o.value, this.value);
-        }
-    }
     private Vibrator vibrator;
-    private TextView textView;
-    private MFCC mfcc;
-    private LinearLayout bacground;
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
     private AudioRecoding audioRecoding;
-    private Map<Integer, String> map;
-    private  DataPreprocessing dataPreprocessing;
-    private float standfloat = 0.4f;
-    private float priority_weight[] = {1.0f, 0.8f, 0.6f, 0.4f, 0.2f, 0f};
-    private int color[] = {Color.DKGRAY, Color.TRANSPARENT, Color.CYAN, Color.MAGENTA, Color.RED, Color.YELLOW};
-
-    private int mNumFrames;
-    private int mSampleRate;
-    private int mChannels;
-    private void mapping(){
-        map.put(0, "차경적");
-        map.put(1,"개짓는소리");
-        map.put(2, "사이렌");
-        map.put(3,"화재경보");
-        map.put(4, "도난경보");
-        map.put(5, "비상경보");
-    }
-    private float[] creatre_MFCC(String wav_path) throws IOException, WavFileException {
-
-        double spectrum[] = dataPreprocessing.spectrumprocesing(wav_path);
-        float meanMFCCValues[] = dataPreprocessing.mfccprocesing(spectrum);
-
-        return meanMFCCValues;
-    }
-    private void Tensor(float [] meanMFCC){
-
-    }
-    private void Weight_calc(float[] softmax) throws JSONException {
-        List<Mapping> list = new ArrayList<>();
-        for (int i = 0;i<softmax.length;i++)
-            if (softmax[i] >= standfloat) {
-                list.add(new Mapping(softmax[i], i));
-                Log.v("통과", Integer.toString(i) + " " + Float.toString(softmax[i]) + map.get(i));
-            }
-        String priorityName[] = HomeScreen.singleton.priorityjson.getPriority();
-
-        for(int i = 0;i<6;i++){
-            for (Mapping mapping: list){
-                if (map.get(mapping.index).equals(priorityName[i])){
-                    mapping.value += priority_weight[i];
-                }
-            }
-        }
-        Collections.sort(list);
-        Action(list.get(0).index);
-    }
-
-    private void Action(int index){
-        bacground.setBackgroundColor(color[index]);
-        Log.v("위험한 소리: ", map.get(index));
-        Vibrator vibrator1 = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        vibrator1.vibrate(VibrationEffect.createOneShot(1000, 50));
-    }
 
     private void startRecoding(){
-        Log.v("녹음", "녹음 시작");
         audioRecoding = new AudioRecoding();
         audioRecoding.startRecording(getExternalFilesDir(null).getAbsolutePath(), "recoding", this);
         Log.v("녹음", "녹음 시작");
     }
 
-    private void stopRecoding() throws JSONException, IOException, WavFileException {
+    private void stopRecoding(){
         audioRecoding.stopRecode();
         String audiopath = audioRecoding.getOutputpath();
         Log.v("녹음", "녹음 중지");
         uploadAudioFile(audiopath);
     }
-    private void playAudio(File file) {
-        MediaPlayer mediaPlayer = new MediaPlayer();
 
-        try {
-            mediaPlayer.setDataSource(file.getAbsolutePath());
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-    private void uploadAudioFile(String audioFilePath) throws JSONException, IOException, WavFileException {
+    private void uploadAudioFile(String audioFilePath) {
         Log.v("BackEnd", "서버로 .wav파일 보냄");
         File audioFile = new File(audioFilePath);
+
         RequestBody requestBody = RequestBody.create(MediaType.parse("audio/wav"), audioFile);
         MultipartBody.Part audioPart = MultipartBody.Part.createFormData("audio", audioFile.getName(), requestBody);
         Retrofit retrofit = new Retrofit.Builder()
@@ -179,8 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                ApiResponse result = response.body();
-
+                response.message();
                 Log.v("확인", "서버에서 받음");
             }
 
@@ -189,13 +91,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.v("확인", t.getMessage());
             }
         });
-        float softmax[] = new float[6];
-        for (int i = 0;i<6;i++) softmax[i] = (float)Math.random();
-        Weight_calc(softmax);
-        float [] create = creatre_MFCC(audioFilePath);
-        for(float arr: create){
-            Log.v("MFCC", Float.toString(arr));
-        }
+        audioFile.delete();
     }
 
     //-----------------------------------------------------------------------------------------------------------------------------
@@ -203,27 +99,28 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        try {
-            HomeScreen.singleton.setPriorityjson(new Json(this));
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        dataPreprocessing = new DataPreprocessing();
 
-        textView = findViewById(R.id.textview_first);
-        bacground = findViewById(R.id.background);
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
-        if (map == null){
-            map = new HashMap<>();
-            mapping();
+        // getSupportActionBar().setDisplayShowTitleEnabled(false); // 툴바 글자 안보이게 만들어주는 코드
+        getSupportActionBar().setTitle("위험한 소리 알리미"); // 제목 변경
+
+        // 앱바의 색깔 바꾸는 코드
+        // getWindow().setStatusBarColor(Color.DKGRAY);
+
+        // 액션바 색깔을 바꾸는 코드
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setBackgroundDrawable(new ColorDrawable(ContextCompat.getColor(this, R.color.actionbar_background)));
         }
+
+
         int permission = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.RECORD_AUDIO);
         int permission1 = ContextCompat.checkSelfPermission(this,
@@ -245,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
                                 Manifest.permission.INTERNET},
                         1000);
             }
+            return;
         }
 
         Button recodeingstartbutton = (Button) findViewById(R.id.button);
@@ -258,14 +156,9 @@ public class MainActivity extends AppCompatActivity {
         recodingstopbutton.setOnClickListener((new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try {
-                    stopRecoding();
-                } catch (JSONException | IOException | WavFileException e) {
-                    throw new RuntimeException(e);
-                }
+                stopRecoding();
             }
         }));
-        getSupportActionBar().setDisplayShowTitleEnabled(false); // 툴바 글자 안보이게 만들어주는 코드
     }
 
     @Override
@@ -319,8 +212,6 @@ public class MainActivity extends AppCompatActivity {
     private void Recoding(){
 
     }
-
-
 
     //-----------------------------------------------------------------------------------------------------------------------------
     @Override

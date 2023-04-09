@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App theme with custom toolbar style -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/dark_gray</item>
+        <item name="colorPrimaryDark">@color/dark_gray</item>
+        <item name="colorAccent">@color/dark_gray</item>
+        <!-- Apply the custom toolbar style to all toolbars -->
+        <item name="android:toolbarStyle">@style/ToolbarTheme</item>
+    </style>
+
+    <!-- Custom toolbar style -->
+    <style name="ToolbarTheme" parent="Widget.MaterialComponents.Toolbar.Primary">
+        <item name="android:background">@color/dark_gray</item>
+    </style>
+
+</resources>
