@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -17,7 +18,6 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-
         android:theme="@style/Theme.Project_Sound_Classification"
         tools:targetApi="31">
 
@@ -68,11 +68,51 @@
 
         <!-- 서브(알림우선순위 → 개발자정보 -->>
         <activity
-            android:name=".DeveloperInfo"
+            android:name=".ServiceInfoActivity_DeveloperInfo"
             android:exported="false"
             android:label="개발자 정보"
-            android:parentActivityName=".ServiceInfoActivity">
+            android:parentActivityName=".MainActivity">
+        </activity>
+
+        <activity
+            android:name=".ServiceInfoActivity_HowToUse"
+            android:exported="false"
+            android:label="사용하는 방법"
+            android:parentActivityName=".MainActivity">
+        </activity>
+
+        <activity
+            android:name=".ServiceInfoActivity_VersionOrUpdate"
+            android:exported="false"
+            android:label="버전 및 업데이트 정보"
+            android:parentActivityName=".MainActivity">
+        </activity>
+
+        <activity
+            android:name=".ServiceInfoActivity_CustomerServiceCenter"
+            android:exported="false"
+            android:label="고객센터 안내"
+            android:parentActivityName=".MainActivity">
+        </activity>
+
+        <activity
+            android:name=".ServiceInfoActivity_Suggestion"
+            android:exported="false"
+            android:label="건의사항 관련 정보 안내"
+            android:parentActivityName=".MainActivity">
+        </activity>
+
+        <activity
+            android:name=".SplashScreenActivity"
+            android:theme="@style/Theme.Project_Sound_Classification"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
 
     </application>
-</manifest>
+
+    </manifest>

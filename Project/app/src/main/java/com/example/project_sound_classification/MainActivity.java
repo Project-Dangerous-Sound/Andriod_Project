@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
@@ -30,6 +32,8 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.project_sound_classification.databinding.ActivityMainBinding;
+import com.google.android.material.appbar.AppBarLayout;
+
 import okhttp3.*;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -44,7 +48,6 @@ import java.net.UnknownHostException;
 
 public class MainActivity extends AppCompatActivity {
     private Vibrator vibrator;
-
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
     private AudioRecoding audioRecoding;
@@ -96,12 +99,28 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+
+        // getSupportActionBar().setDisplayShowTitleEnabled(false); // 툴바 글자 안보이게 만들어주는 코드
+        getSupportActionBar().setTitle("위험한 소리 알리미"); // 제목 변경
+
+        // 앱바의 색깔 바꾸는 코드
+        // getWindow().setStatusBarColor(Color.DKGRAY);
+
+        // 액션바 색깔을 바꾸는 코드
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setBackgroundDrawable(new ColorDrawable(ContextCompat.getColor(this, R.color.actionbar_background)));
+        }
+
+
         int permission = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.RECORD_AUDIO);
         int permission1 = ContextCompat.checkSelfPermission(this,
@@ -140,7 +159,6 @@ public class MainActivity extends AppCompatActivity {
                 stopRecoding();
             }
         }));
-        getSupportActionBar().setDisplayShowTitleEnabled(false); // 툴바 글자 안보이게 만들어주는 코드
     }
 
     @Override
@@ -194,8 +212,6 @@ public class MainActivity extends AppCompatActivity {
     private void Recoding(){
 
     }
-
-
 
     //-----------------------------------------------------------------------------------------------------------------------------
     @Override
