@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
@@ -33,6 +34,8 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+
+import com.google.android.material.appbar.AppBarLayout;
 import com.example.project_sound_classification.audiofeature.MFCC;
 import com.example.project_sound_classification.databinding.ActivityMainBinding;
 import com.example.project_sound_classification.librosafeature.WavFile;
@@ -296,6 +299,16 @@ public class MainActivity extends AppCompatActivity {
             }
         }));
         getSupportActionBar().setDisplayShowTitleEnabled(false); // 툴바 글자 안보이게 만들어주는 코드
+
+        // 앱바의 색깔 바꾸는 코드
+        // getWindow().setStatusBarColor(Color.DKGRAY);
+
+        // 액션바 색깔을 바꾸는 코드
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setBackgroundDrawable(new ColorDrawable(ContextCompat.getColor(this, R.color.actionbar_background)));
+        }
+
     }
 
     @Override
