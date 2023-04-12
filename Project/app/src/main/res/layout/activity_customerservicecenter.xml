@@ -25,7 +25,7 @@
             android:background="@color/dark_gray"
             android:gravity="center_vertical"
 
-            android:text="Q. 개발자 정보 안내"
+            android:text="Q. 고객센터 안내"
             android:textColor="@color/white"
             android:textSize="25dp"
             tools:ignore="MissingConstraints"
@@ -37,7 +37,7 @@
             android:layout_width="match_parent"
             android:layout_height="379dp"
             android:background="@color/white"
-            android:text=" - 개발자 정보 : 개발자 정보에 대한 내용 글귀 추가"
+            android:text=" - 고객센터 안내 : 고객센터에 대한 내용 글귀 추가"
             android:textColor="@color/black"
             android:textSize="20dp"
 

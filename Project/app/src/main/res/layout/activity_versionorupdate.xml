@@ -25,7 +25,7 @@
             android:background="@color/dark_gray"
             android:gravity="center_vertical"
 
-            android:text="Q. 개발자 정보 안내"
+            android:text="Q. 버전 및 업데이트 안내"
             android:textColor="@color/white"
             android:textSize="25dp"
             tools:ignore="MissingConstraints"
@@ -37,7 +37,7 @@
             android:layout_width="match_parent"
             android:layout_height="379dp"
             android:background="@color/white"
-            android:text=" - 개발자 정보 : 개발자 정보에 대한 내용 글귀 추가"
+            android:text=" - 버전 및 업데이트 정보 : 버전 및 업데이트에 대한 내용 글귀 추가"
             android:textColor="@color/black"
             android:textSize="20dp"
 

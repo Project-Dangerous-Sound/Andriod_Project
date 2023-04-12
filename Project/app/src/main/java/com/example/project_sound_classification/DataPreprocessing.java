@@ -70,7 +70,7 @@ public class DataPreprocessing {
                 indexCounter++;
             }
         }
-
+        float [][] test = new float[nMFCC][80];
         //code to take the mean of mfcc values across the rows such that
         //[nMFCC x nFFT] matrix would be converted into
         //[nMFCC x 1] dimension - which would act as an input to tflite model

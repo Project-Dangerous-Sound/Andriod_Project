@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
@@ -33,6 +34,8 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+
+import com.google.android.material.appbar.AppBarLayout;
 import com.example.project_sound_classification.audiofeature.MFCC;
 import com.example.project_sound_classification.databinding.ActivityMainBinding;
 import com.example.project_sound_classification.librosafeature.WavFile;
@@ -46,6 +49,7 @@ import retrofit2.Response;
 import retrofit2.converter.gson.GsonConverterFactory;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
+import org.tensorflow.lite.Tensor;
 import org.w3c.dom.Node;
 import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.Interpreter;
@@ -59,6 +63,8 @@ import java.io.File;
 import java.io.IOException;
 import java.math.RoundingMode;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.*;
 import java.text.DecimalFormat;
 import java.nio.MappedByteBuffer;
@@ -105,11 +111,38 @@ public class MainActivity extends AppCompatActivity {
 
         double spectrum[] = dataPreprocessing.spectrumprocesing(wav_path);
         float meanMFCCValues[] = dataPreprocessing.mfccprocesing(spectrum);
-
+        loadModdelANDprediction(meanMFCCValues);
         return meanMFCCValues;
     }
-    private void Tensor(float [] meanMFCC){
+    private void loadModdelANDprediction(float [] meanMFCC) throws IOException {
+        MappedByteBuffer tflitemodel = FileUtil.loadMappedFile(this, "converted_model_4layer.tflite");
+        Interpreter tflite;
 
+        Interpreter.Options tfliteOption = new Interpreter.Options();
+        tfliteOption.setNumThreads(2);
+        tflite = new Interpreter(tflitemodel, tfliteOption);
+
+        int imageTensorIndex = 0;
+        int [] imgeShape = tflite.getInputTensor(imageTensorIndex).shape();
+        DataType imgeDataType = tflite.getInputTensor(imageTensorIndex).dataType();
+        Log.v("확인", Integer.toString(imgeShape[0]) + " " + Integer.toString(imgeShape[1]) + " " + Integer.toString(imgeShape[2]) + " " + Integer.toString(imgeShape[3]));
+
+        int probabilityTensorIndex = 0;
+        int probabilityShape[] = tflite.getOutputTensor(probabilityTensorIndex).shape();
+        DataType probabilityDataType = tflite.getOutputTensor(probabilityTensorIndex).dataType();
+
+        TensorBuffer inBuffer = TensorBuffer.createFixedSize(imgeShape,imgeDataType);
+        inBuffer.loadArray(meanMFCC, imgeShape);
+        ByteBuffer inputBuffer1 = ByteBuffer.allocateDirect(1*120*80*1).order(ByteOrder.nativeOrder());
+        ByteBuffer inputBuffer = inBuffer.getBuffer();
+
+        for (int i = 0;i<120;i++){
+            for (int j = 0;j<80;j++){
+/*                inputBuffer1.putFloat()*/
+            }
+        }
+        TensorBuffer outputTensorBuffer = TensorBuffer.createFixedSize(probabilityShape,probabilityDataType);
+        tflite.run(inputBuffer, outputTensorBuffer.getBuffer());
     }
     private void Weight_calc(float[] softmax) throws JSONException {
         List<Mapping> list = new ArrayList<>();
@@ -265,7 +298,19 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }));
-        getSupportActionBar().setDisplayShowTitleEnabled(false); // 툴바 글자 안보이게 만들어주는 코드
+        // getSupportActionBar().setDisplayShowTitleEnabled(false); 툴바 글자 안보이게 만들어주는 코드
+
+        getSupportActionBar().setTitle("위험한 소리 알리미"); // 제목 변경
+
+        // 앱바의 색깔 바꾸는 코드
+        // getWindow().setStatusBarColor(Color.DKGRAY);
+
+        // 액션바 색깔을 바꾸는 코드
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setBackgroundDrawable(new ColorDrawable(ContextCompat.getColor(this, R.color.actionbar_background)));
+        }
+
     }
 
     @Override

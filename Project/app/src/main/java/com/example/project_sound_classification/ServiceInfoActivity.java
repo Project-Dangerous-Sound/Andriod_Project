@@ -1,38 +1,40 @@
 package com.example.project_sound_classification;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class ServiceInfoActivity extends AppCompatActivity {
-
     private SearchView searchViewText;
     private LinearLayout buttonLayout;
     private TextView whiteButtonCountTextView;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_serviceinfo);
 
+        // 액션바 색깔을 바꾸는 코드
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setBackgroundDrawable(new ColorDrawable(ContextCompat.getColor(this, R.color.actionbar_background)));
+        }
+
         buttonLayout = findViewById(R.id.button_layout);
         searchViewText = findViewById(R.id.searchView);
 
-
+        // SearchView에 입력한 문자열을 포함하는 Q.~ 버튼들의 개수를 알려주는 코드
         int whiteButtonCount = 0;
         for (int i = 0; i < buttonLayout.getChildCount(); i++) {
             Button button = (Button) buttonLayout.getChildAt(i);
@@ -43,9 +45,11 @@ public class ServiceInfoActivity extends AppCompatActivity {
                 }
             }
         }
-
         whiteButtonCountTextView = findViewById(R.id.whiteButtonCount);
         whiteButtonCountTextView.setText("" + whiteButtonCount);
+
+        // 제목 변경
+        getSupportActionBar().setTitle("이용안내");
 
         //------------------------------------------------------------------------------------------------
         // 버튼들
@@ -54,7 +58,7 @@ public class ServiceInfoActivity extends AppCompatActivity {
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(ServiceInfoActivity.this, DeveloperInfo.class);
+                Intent intent = new Intent(ServiceInfoActivity.this, ServiceInfoActivity_DeveloperInfo.class);
                 startActivity(intent);
 
             }
@@ -65,7 +69,9 @@ public class ServiceInfoActivity extends AppCompatActivity {
         button2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "This button does XYZ", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(ServiceInfoActivity.this, ServiceInfoActivity_HowToUse.class);
+                startActivity(intent);
+
             }
         });
 
@@ -74,8 +80,8 @@ public class ServiceInfoActivity extends AppCompatActivity {
         button3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "This button does XYZ", Toast.LENGTH_LONG).show();
-            }
+                Intent intent = new Intent(ServiceInfoActivity.this, ServiceInfoActivity_VersionOrUpdate.class);
+                startActivity(intent);            }
         });
 
         // 고객센터 버튼
@@ -83,8 +89,8 @@ public class ServiceInfoActivity extends AppCompatActivity {
         button4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "This button does XYZ", Toast.LENGTH_LONG).show();
-            }
+                Intent intent = new Intent(ServiceInfoActivity.this, ServiceInfoActivity_CustomerServiceCenter.class);
+                startActivity(intent);               }
         });
 
         // 건의사항 버튼
@@ -92,8 +98,8 @@ public class ServiceInfoActivity extends AppCompatActivity {
         button5.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "This button does XYZ", Toast.LENGTH_LONG).show();
-            }
+                Intent intent = new Intent(ServiceInfoActivity.this, ServiceInfoActivity_Suggestion.class);
+                startActivity(intent);              }
         });
 
         // 더보기 버튼
@@ -101,7 +107,7 @@ public class ServiceInfoActivity extends AppCompatActivity {
         button6.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "This button does XYZ", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "추가적인 질문 사항은 추후에 추가 예정", Toast.LENGTH_LONG).show();
             }
         });
 

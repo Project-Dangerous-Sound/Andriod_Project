@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F2F2F2"
+    android:id="@+id/sub_toolbar4"
     tools:context=".PriorityActivity">
 
     <RelativeLayout
@@ -59,12 +60,12 @@
             android:layout_height="47dp"
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
-            android:layout_marginEnd="19dp"
+            android:layout_marginEnd="16dp"
             android:layout_marginBottom="24dp"
+            android:background="@drawable/ripple_custom"
             android:text="더보기"
             android:textColor="@color/black"
-            android:textSize="15dp"
-            android:background="@drawable/ripple_custom"/>
+            android:textSize="15dp" />
 
         <SearchView
             android:id="@+id/searchView"
