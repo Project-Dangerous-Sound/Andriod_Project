@@ -1,9 +1,13 @@
 package com.example.project_sound_classification;
 
+import android.util.Log;
+
 import com.example.project_sound_classification.audiofeature.FFT;
 import com.example.project_sound_classification.audiofeature.MFCC;
 import com.example.project_sound_classification.librosafeature.WavFile;
 import com.example.project_sound_classification.librosafeature.WavFileException;
+
+import org.checkerframework.checker.index.qual.LengthOf;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,11 +51,12 @@ public class DataPreprocessing {
             }
             meanBuffer[q]=Double.parseDouble(df.format(frameVal/mChannels));
         }
-
+        Log.v("크기 확인", Integer.toString(mNumFrames));
+        Log.v("크기 확인", Integer.toString(mChannels) + " " + Integer.toString(mSampleRate));
         return meanBuffer;
     }
 
-    public float[] mfccprocesing(double[] spectrum){
+    public float[][] mfccprocesing(double[] spectrum){
         mfcc = new MFCC();
         mfcc.setSampleRate(mSampleRate);
         int nMFCC = 120;
@@ -59,15 +64,29 @@ public class DataPreprocessing {
         float[] mfccInput = mfcc.process(spectrum);
 
         int nFFT = mfccInput.length/nMFCC;
-        double [][] mfccValues = new double[nMFCC][nFFT];
-
-        //loop to convert the mfcc values into multi-dimensional array
+        float [][] mfccValues = new float[nMFCC][nFFT];
         for(int i=0;i<nFFT;i++){
             int indexCounter = i * nMFCC;
             int rowIndexValue = i%nFFT;
             for(int j=0;j<nMFCC;j++){
                 mfccValues[j][rowIndexValue]=mfccInput[indexCounter];
                 indexCounter++;
+            }
+        }
+
+        float result[][] = new float[nMFCC][80];
+        //loop to convert the mfcc values into multi-dimensional array
+        if (nFFT < 80){
+            for (int i = 0;i<120;i++){
+                for (int j = 0;j<nFFT;j++) result[i][j] = mfccValues[i][j];
+                for (int j = nFFT;j<80 - nFFT;j++) result[i][j] = 0;
+            }
+        }
+        else{
+            for (int i = 0;i<120;i++){
+                for (int j = 0;j<80; j++){
+                    result[i][j] = mfccValues[i][j];
+                }
             }
         }
         float [][] test = new float[nMFCC][80];
@@ -84,6 +103,6 @@ public class DataPreprocessing {
             meanMFCCValues[p] = (float) fftMeanValAcrossRow;
         }
 
-        return meanMFCCValues;
+        return result;
     }
 }

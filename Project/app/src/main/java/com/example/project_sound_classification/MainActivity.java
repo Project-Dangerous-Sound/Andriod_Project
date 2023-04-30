@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
@@ -17,9 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.Switch;
-import androidx.annotation.RequiresPermission;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -27,7 +24,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -35,10 +31,8 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 
-import com.google.android.material.appbar.AppBarLayout;
 import com.example.project_sound_classification.audiofeature.MFCC;
 import com.example.project_sound_classification.databinding.ActivityMainBinding;
-import com.example.project_sound_classification.librosafeature.WavFile;
 import com.example.project_sound_classification.librosafeature.WavFileException;
 
 import okhttp3.*;
@@ -47,26 +41,18 @@ import retrofit2.Callback;
 import retrofit2.*;
 import retrofit2.Response;
 import retrofit2.converter.gson.GsonConverterFactory;
-import org.jetbrains.annotations.Nullable;
+
 import org.json.JSONException;
-import org.tensorflow.lite.Tensor;
-import org.w3c.dom.Node;
 import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.support.common.FileUtil;
-import org.tensorflow.lite.support.common.TensorProcessor;
-import org.tensorflow.lite.support.common.ops.NormalizeOp;
-import org.tensorflow.lite.support.label.TensorLabel;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.RoundingMode;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
-import java.text.DecimalFormat;
 import java.nio.MappedByteBuffer;
 public class MainActivity extends AppCompatActivity {
     static class Mapping implements Comparable<Mapping>{
@@ -83,10 +69,37 @@ public class MainActivity extends AppCompatActivity {
             return Float.compare(o.value, this.value);
         }
     }
+
+    private class Threads extends Thread{
+        public Threads(){
+
+        }
+
+        public void run(){
+
+            while (true){
+                try{
+                    startRecoding();
+                    Thread.sleep(1000);
+                    stopRecoding();
+                }
+                catch(InterruptedException e){
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } catch (WavFileException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
     private Vibrator vibrator;
     private TextView textView;
     private MFCC mfcc;
     private LinearLayout bacground;
+    private LinearLayout bacground2;
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
     private AudioRecoding audioRecoding;
@@ -107,14 +120,21 @@ public class MainActivity extends AppCompatActivity {
         map.put(4, "도난경보");
         map.put(5, "비상경보");
     }
-    private float[] creatre_MFCC(String wav_path) throws IOException, WavFileException {
-
+    private boolean data_preprocessing_and_pridiction(String wav_path) throws IOException, WavFileException {
+        long start = System.currentTimeMillis();
         double spectrum[] = dataPreprocessing.spectrumprocesing(wav_path);
-        float meanMFCCValues[] = dataPreprocessing.mfccprocesing(spectrum);
-        loadModdelANDprediction(meanMFCCValues);
-        return meanMFCCValues;
+        float meanMFCCValues[][] = dataPreprocessing.mfccprocesing(spectrum);
+        long end = System.currentTimeMillis();
+        Log.v("데이터 전처리 시간 측정", Long.toString((end - start) / 1000));
+        start = System.currentTimeMillis();
+        boolean isCheck = loadModdelANDprediction(meanMFCCValues);
+        end = System.currentTimeMillis();
+        if (isCheck) Log.v("소리확인", "처리음");
+        else Log.v("소리확인", "비처리음");
+        Log.v("모델 실행시간 측정", Long.toString((end - start) / 1000));
+        return isCheck;
     }
-    private void loadModdelANDprediction(float [] meanMFCC) throws IOException {
+    private boolean loadModdelANDprediction(float [][] meanMFCC) throws IOException {
         MappedByteBuffer tflitemodel = FileUtil.loadMappedFile(this, "converted_model_4layer.tflite");
         Interpreter tflite;
 
@@ -126,23 +146,25 @@ public class MainActivity extends AppCompatActivity {
         int [] imgeShape = tflite.getInputTensor(imageTensorIndex).shape();
         DataType imgeDataType = tflite.getInputTensor(imageTensorIndex).dataType();
         Log.v("확인", Integer.toString(imgeShape[0]) + " " + Integer.toString(imgeShape[1]) + " " + Integer.toString(imgeShape[2]) + " " + Integer.toString(imgeShape[3]));
-
+        Log.v("확인", Integer.toString(meanMFCC.length) + " " + Integer.toString(meanMFCC[0].length));
         int probabilityTensorIndex = 0;
         int probabilityShape[] = tflite.getOutputTensor(probabilityTensorIndex).shape();
         DataType probabilityDataType = tflite.getOutputTensor(probabilityTensorIndex).dataType();
 
-        TensorBuffer inBuffer = TensorBuffer.createFixedSize(imgeShape,imgeDataType);
-        inBuffer.loadArray(meanMFCC, imgeShape);
-        ByteBuffer inputBuffer1 = ByteBuffer.allocateDirect(1*120*80*1).order(ByteOrder.nativeOrder());
-        ByteBuffer inputBuffer = inBuffer.getBuffer();
-
-        for (int i = 0;i<120;i++){
-            for (int j = 0;j<80;j++){
-/*                inputBuffer1.putFloat()*/
+        ByteBuffer inputBuffer1 = ByteBuffer.allocateDirect(38400).order(ByteOrder.nativeOrder());
+        // 1 * 120 * 80 * 1
+        for (int j = 0; j < 120; j++) {
+            for (int k = 0; k < 80; k++) {
+                inputBuffer1.putFloat(meanMFCC[j][k]);
             }
         }
         TensorBuffer outputTensorBuffer = TensorBuffer.createFixedSize(probabilityShape,probabilityDataType);
-        tflite.run(inputBuffer, outputTensorBuffer.getBuffer());
+        tflite.run(inputBuffer1, outputTensorBuffer.getBuffer());
+        float[] result = outputTensorBuffer.getFloatArray();
+        float nonsound = Math.abs(1.0f - result[0]);
+        float checksound = Math.abs(1.0f - result[1]);
+        Log.v("모델결과 확인", Float.toString(result[0]) + " " + Float.toString(result[1]));
+        return checksound < nonsound;
     }
     private void Weight_calc(float[] softmax) throws JSONException {
         List<Mapping> list = new ArrayList<>();
@@ -161,48 +183,27 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         Collections.sort(list);
-        Action(list.get(0).index);
+        if (list.size() > 1) Action(list.get(0).index, list.get(1).index);
+        else Action(list.get(0).index, -1);
     }
 
-    private void Action(int index){
-        bacground.setBackgroundColor(color[index]);
+    private void Action(int index, int index2){
+        if (index2 != -1) {
+            bacground.setBackgroundColor(color[index]);
+        }
+        else{
+            bacground.setBackgroundColor(color[index]);
+        }
         Log.v("위험한 소리: ", map.get(index));
         Vibrator vibrator1 = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         vibrator1.vibrate(VibrationEffect.createOneShot(1000, 50));
     }
-
-    private void startRecoding(){
-        Log.v("녹음", "녹음 시작");
-        audioRecoding = new AudioRecoding();
-        audioRecoding.startRecording(getExternalFilesDir(null).getAbsolutePath(), "recoding", this);
-        Log.v("녹음", "녹음 시작");
-    }
-
-    private void stopRecoding() throws JSONException, IOException, WavFileException {
-        audioRecoding.stopRecode();
-        String audiopath = audioRecoding.getOutputpath();
-        Log.v("녹음", "녹음 중지");
-        uploadAudioFile(audiopath);
-    }
-    private void playAudio(File file) {
-        MediaPlayer mediaPlayer = new MediaPlayer();
-
-        try {
-            mediaPlayer.setDataSource(file.getAbsolutePath());
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-    private void uploadAudioFile(String audioFilePath) throws JSONException, IOException, WavFileException {
+    private void ServerRequst(File audioFile){
         Log.v("BackEnd", "서버로 .wav파일 보냄");
-        File audioFile = new File(audioFilePath);
         RequestBody requestBody = RequestBody.create(MediaType.parse("audio/wav"), audioFile);
         MultipartBody.Part audioPart = MultipartBody.Part.createFormData("audio", audioFile.getName(), requestBody);
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://10.0.2.2:5000/upload_audio/")
+                .baseUrl("http://15.164.76.29:5000")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
@@ -214,20 +215,50 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
                 ApiResponse result = response.body();
 
+                float softmax[] = new float[6];
+                for (int i = 0;i<6;i++) softmax[i] = (float)Math.random();
+                try {
+                    Weight_calc(softmax);
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+                Log.v("성공메세지", Integer.toString(result.getMessage().length));
                 Log.v("확인", "서버에서 받음");
             }
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Log.v("확인", t.getMessage());
+                Log.v("실패메세지", t.getMessage());
             }
         });
-        float softmax[] = new float[6];
-        for (int i = 0;i<6;i++) softmax[i] = (float)Math.random();
-        Weight_calc(softmax);
-        float [] create = creatre_MFCC(audioFilePath);
-        for(float arr: create){
-            Log.v("MFCC", Float.toString(arr));
+    }
+
+    private void startRecoding(){
+        Log.v("녹음", "녹음 시작");
+        audioRecoding = new AudioRecoding();
+        audioRecoding.startRecording(getExternalFilesDir(null).getAbsolutePath(), "recoding", this);
+    }
+
+    private void stopRecoding() throws JSONException, IOException, WavFileException {
+        audioRecoding.stopRecode();
+        String audiopath = audioRecoding.getBrekSound();
+        Log.v("녹음", "녹음 중지");
+        Log.v("파일 위치", audiopath);
+        uploadAudioFile(audiopath);
+    }
+    private void uploadAudioFile(String audioFilePath) throws JSONException, IOException, WavFileException {
+        boolean create;
+        try {
+            create = data_preprocessing_and_pridiction(audioFilePath);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (WavFileException e) {
+            throw new RuntimeException(e);
+        }
+        if(create) {
+            File audioFile = new File(audioFilePath);
+
+            ServerRequst(audioFile);
         }
     }
 
@@ -239,7 +270,8 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         try {
-            HomeScreen.singleton.setPriorityjson(new Json(this));
+            if(HomeScreen.singleton.priorityjson == null)
+                HomeScreen.singleton.setPriorityjson(new Json(this));
         } catch (JSONException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
@@ -281,23 +313,28 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Button recodeingstartbutton = (Button) findViewById(R.id.button);
-        Button recodingstopbutton = (Button) findViewById(R.id.button2);
+        Button recodeingstopbutton = (Button) findViewById(R.id.button2);
+        Threads threads = new Threads();
         recodeingstartbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startRecoding();
             }
         });
-        recodingstopbutton.setOnClickListener((new View.OnClickListener() {
+        recodeingstopbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 try {
                     stopRecoding();
-                } catch (JSONException | IOException | WavFileException e) {
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } catch (WavFileException e) {
                     throw new RuntimeException(e);
                 }
             }
-        }));
+        });
         // getSupportActionBar().setDisplayShowTitleEnabled(false); 툴바 글자 안보이게 만들어주는 코드
 
         getSupportActionBar().setTitle("위험한 소리 알리미"); // 제목 변경

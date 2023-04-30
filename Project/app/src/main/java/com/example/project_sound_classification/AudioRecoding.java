@@ -11,6 +11,7 @@ public class AudioRecoding {
     private ExtAudioRecorder recorder1;
     private String outputpath;
     private String test;
+    private String breksound;
     public void startRecording(String outputDir, String outputName, Context context) {
         /*recorder = new MediaRecorder(context);
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
@@ -19,7 +20,8 @@ public class AudioRecoding {
         */
         recorder1 = ExtAudioRecorder.getInstanse(false);
         outputpath = outputDir + "/" + outputName + ".wav";
-        test = outputDir + "/" + "00c934d7" + ".wav";
+        test = outputDir + "/" + "0b80f560" + ".wav";
+        breksound = outputDir + "/" + "020eb9f6" + ".wav";
         //recorder.setOutputFile(outputpath);
         recorder1.setOutputFile(outputpath);
 
@@ -51,4 +53,6 @@ public class AudioRecoding {
     public String getTest(){
         return test;
     }
+
+    public String getBrekSound(){ return breksound; }
 }
