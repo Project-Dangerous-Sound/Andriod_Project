@@ -1,5 +1,6 @@
 package com.example.project_sound_classification;
 
+import android.graphics.Color;
 import android.util.Log;
 
 import java.util.HashMap;
@@ -17,6 +18,7 @@ public class Singleton {
     public void setItemTouchHelperCallback(ListAdapter adapter){
         itemTouchHelperCallback = new ItemTouchHelperCallback(adapter, adapter);
     }
+
     public void setPriorityjson(Json priorityjson){
         this.priorityjson = priorityjson;
     }

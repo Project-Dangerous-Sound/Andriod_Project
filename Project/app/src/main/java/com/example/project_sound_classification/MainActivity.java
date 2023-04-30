@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.Switch;
 import androidx.annotation.RequiresPermission;
 import android.widget.LinearLayout;
@@ -87,6 +88,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView textView;
     private MFCC mfcc;
     private LinearLayout bacground;
+    private ImageView background1, background2;  //이미지뷰 백그라운드 색상 변경을 위한 변수
+
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
     private AudioRecoding audioRecoding;
@@ -161,12 +164,19 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         Collections.sort(list);
-        Action(list.get(0).index);
+        Action(list.get(0).index, list.get(1).index);
     }
 
-    private void Action(int index){
-        bacground.setBackgroundColor(color[index]);
-        Log.v("위험한 소리: ", map.get(index));
+    private void Action(int index1, int index2){
+        //bacground.setBackgroundColor(color[index1]);
+
+        //이미지뷰 백그라운드 변경
+        background1.setBackgroundColor(color[index1]);
+        background2.setBackgroundColor(color[index2]);
+
+        Log.v("가장 위험한 소리: ", map.get(index1));
+        Log.v("가장 위험한 소리: ", map.get(index2));
+
         Vibrator vibrator1 = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         vibrator1.vibrate(VibrationEffect.createOneShot(1000, 50));
     }
@@ -247,8 +257,13 @@ public class MainActivity extends AppCompatActivity {
         }
         dataPreprocessing = new DataPreprocessing();
 
-        textView = findViewById(R.id.textview_first);
+        //textView = findViewById(R.id.textview_first);
         bacground = findViewById(R.id.background);
+
+        //이미지뷰 백그라운드
+        background1 = findViewById(R.id.background1);
+        background2 = findViewById(R.id.background2);
+
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);

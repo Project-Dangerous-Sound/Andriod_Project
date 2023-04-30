@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal">
@@ -13,9 +13,12 @@
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content"
+            tools:context=".MainActivity">
 
             <ImageView
                 android:id="@+id/list_image"
@@ -31,7 +34,7 @@
                 android:id="@+id/sound_list"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="5dp"
                 android:text="소리분류"
                 android:textSize="20sp"
                 app:layout_constraintStart_toEndOf="@+id/list_image"
@@ -41,18 +44,17 @@
                 android:id="@+id/list_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="5dp"
                 android:textSize="20sp"
                 app:layout_constraintEnd_toStartOf="@+id/change_color_btn"
-                app:layout_constraintHorizontal_bias="0.444"
-                app:layout_constraintStart_toEndOf="@+id/color"
+                app:layout_constraintStart_toEndOf="@+id/sound_list"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/color"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="색상"
+                android:text="현재색상"
                 android:textSize="20sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/list_image"
@@ -65,17 +67,18 @@
                 android:textSize="20sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/change_color_btn"
-                app:layout_constraintHorizontal_bias="0.515"
                 app:layout_constraintStart_toEndOf="@+id/color"
                 app:layout_constraintTop_toBottomOf="@+id/list_name" />
 
             <Button
                 android:id="@+id/change_color_btn"
-                android:layout_width="31dp"
-                android:layout_height="45dp"
+                android:layout_width="61dp"
+                android:layout_height="67dp"
+                android:text="색상변경"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.555" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
