@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
@@ -16,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -96,10 +98,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private Vibrator vibrator;
-    private TextView textView;
+    private TextView sound1, sound2;
     private MFCC mfcc;
-    private LinearLayout bacground;
-    private LinearLayout bacground2;
+    private ImageView background1, background2;
+
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
     private AudioRecoding audioRecoding;
@@ -107,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
     private  DataPreprocessing dataPreprocessing;
     private float standfloat = 0.4f;
     private float priority_weight[] = {1.0f, 0.8f, 0.6f, 0.4f, 0.2f, 0f};
-    private int color[] = {Color.DKGRAY, Color.TRANSPARENT, Color.CYAN, Color.MAGENTA, Color.RED, Color.YELLOW};
+    private int color[] = {Color.DKGRAY, Color.rgb(0,0,0), Color.CYAN, Color.MAGENTA, Color.RED, Color.YELLOW};
 
     private int mNumFrames;
     private int mSampleRate;
@@ -189,10 +191,17 @@ public class MainActivity extends AppCompatActivity {
 
     private void Action(int index, int index2){
         if (index2 != -1) {
-            bacground.setBackgroundColor(color[index]);
+            background1.setBackgroundColor(color[index]);
+            background2.setBackgroundColor(color[index2]);
+
+            sound1.setText(map.get(index));
+            sound2.setText(map.get(index2));
+
         }
         else{
-            bacground.setBackgroundColor(color[index]);
+            background1.setBackgroundColor(color[index]);
+
+            sound1.setText(map.get(index));
         }
         Log.v("위험한 소리: ", map.get(index));
         Vibrator vibrator1 = (Vibrator) getSystemService(VIBRATOR_SERVICE);
@@ -215,13 +224,13 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
                 ApiResponse result = response.body();
 
-                float softmax[] = new float[6];
+                /*float softmax[] = new float[6];
                 for (int i = 0;i<6;i++) softmax[i] = (float)Math.random();
                 try {
                     Weight_calc(softmax);
                 } catch (JSONException e) {
                     throw new RuntimeException(e);
-                }
+                }*/
                 Log.v("성공메세지", Integer.toString(result.getMessage().length));
                 Log.v("확인", "서버에서 받음");
             }
@@ -257,7 +266,13 @@ public class MainActivity extends AppCompatActivity {
         }
         if(create) {
             File audioFile = new File(audioFilePath);
-
+            float softmax[] = new float[6];
+            for (int i = 0;i<6;i++) softmax[i] = (float)Math.random();
+            try {
+                Weight_calc(softmax);
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
             ServerRequst(audioFile);
         }
     }
@@ -279,8 +294,14 @@ public class MainActivity extends AppCompatActivity {
         }
         dataPreprocessing = new DataPreprocessing();
 
-        textView = findViewById(R.id.textview_first);
-        bacground = findViewById(R.id.background);
+        //textView = findViewById(R.id.textview_first);
+        //bacground = findViewById(R.id.background);
+        background1 = findViewById(R.id.background1);
+        background2 = findViewById(R.id.background2);
+
+        sound1 = findViewById(R.id.sound1);
+        sound2 = findViewById(R.id.sound2);
+
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
