@@ -7,7 +7,7 @@ public class MFCC {
     private static int       n_mfcc       		= 120;
     private final static double    fMin                 = 0.0;
     private final static int       n_fft                = 2048;
-    private final static int       hop_length           = 512;
+    private final static int       hop_length           = 400;
     private final static int	   n_mels               = 128;
 
     private static double    sampleRate           = 22050.0;
@@ -325,7 +325,8 @@ public class MFCC {
         for (int i = 0; i < freqs.length; i++) {
             if (freqs[i] < min_log_hz){
                 mels[i] = (freqs[i] - f_min) / f_sp;
-            }else{
+            }
+            else{
                 mels[i] = min_log_mel + Math.log(freqs[i]/min_log_hz) / logstep;
             }
         }
