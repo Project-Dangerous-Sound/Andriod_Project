@@ -7,9 +7,10 @@ import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 public class ApiResponse {
-    @SerializedName("success")
-    private boolean success;
-
-    @SerializedName("messeage")
+    @SerializedName("message")
     private float[] message;
+
+    public float[] getMessage(){
+        return message;
+    }
 }
