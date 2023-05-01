@@ -95,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
     private Vibrator vibrator;
     private TextView textView;
     private MFCC mfcc;
@@ -222,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     throw new RuntimeException(e);
                 }
-                Log.v("성공메세지", Integer.toString(result.getMessage().length));
+                Log.v("성공메세지", result.getMessage());
                 Log.v("확인", "서버에서 받음");
             }
 
@@ -257,7 +258,6 @@ public class MainActivity extends AppCompatActivity {
         }
         if(create) {
             File audioFile = new File(audioFilePath);
-
             ServerRequst(audioFile);
         }
     }
@@ -318,7 +318,7 @@ public class MainActivity extends AppCompatActivity {
         recodeingstartbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startRecoding();
+                threads.run();
             }
         });
         recodeingstopbutton.setOnClickListener(new View.OnClickListener() {

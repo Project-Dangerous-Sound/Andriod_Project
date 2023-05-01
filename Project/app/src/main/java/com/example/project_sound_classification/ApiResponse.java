@@ -8,9 +8,9 @@ import retrofit2.http.POST;
 import retrofit2.http.Part;
 public class ApiResponse {
     @SerializedName("message")
-    private float[] message;
+    private String message;
 
-    public float[] getMessage(){
+    public String getMessage(){
         return message;
     }
 }
