@@ -22,6 +22,7 @@ public class PriorityActivity extends AppCompatActivity {
     ItemTouchHelper helper;
     ListAdapter adapter = new ListAdapter();
     String soundname[] = new String[7];
+    //int color[] = new int[7];
     static Json priorityjson;
 
     static public void reset(){
@@ -62,7 +63,7 @@ public class PriorityActivity extends AppCompatActivity {
             throw new RuntimeException(e);
         }
         for (int i = 0;i<7;i++){
-            adapter.addItem(new Soundlist(HomeScreen.singleton.map.get(soundname[i]), soundname[i],i + 1));
+            adapter.addItem(new Soundlist(HomeScreen.singleton.map.get(soundname[i]), soundname[i],i + 1/*, color[i]*/));
         }
         HomeScreen.singleton.setItemTouchHelperCallback(adapter);
 
