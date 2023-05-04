@@ -9,4 +9,9 @@
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+
+    <string name="confirm">select</string>
+    <string name="cancel">cancel</string>
+    <string name="options">Options</string>
+
 </resources>

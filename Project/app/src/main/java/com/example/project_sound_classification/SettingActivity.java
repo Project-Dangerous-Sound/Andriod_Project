@@ -19,17 +19,13 @@ import org.json.JSONException;
 
 import java.io.IOException;
 
-import yuku.ambilwarna.AmbilWarnaDialog;
-
 public class SettingActivity extends AppCompatActivity {
     static RecyclerView setting_rv;
     ItemTouchHelper helper;
-    SettingListAdapter adapter = new SettingListAdapter();
+    SettingListAdapter adapter = new SettingListAdapter(this);
     String soundname[] = new String[7];
     int color[] = new int[7];
     static Json priorityjson;
-
-    Button setting_btn;
     int defaultColor;
 
 
@@ -47,7 +43,7 @@ public class SettingActivity extends AppCompatActivity {
         }
         getSupportActionBar().setTitle("설정"); // 제목 변경
 
-        adapter = new SettingListAdapter ();
+        adapter = new SettingListAdapter (this);
         if (priorityjson == null) {
             try {
                 priorityjson = new Json(this);
@@ -75,25 +71,5 @@ public class SettingActivity extends AppCompatActivity {
         //RecyclerView의 Adapter 세팅
         setting_rv.setAdapter(adapter);
 
-
-    }
-    public void openColorPicker(){
-        AmbilWarnaDialog colorPicker = new AmbilWarnaDialog(this, defaultColor, new AmbilWarnaDialog.OnAmbilWarnaListener() {
-            @Override
-            public void onCancel(AmbilWarnaDialog dialog) {
-                //취소
-            }
-
-            @Override
-            public void onOk(AmbilWarnaDialog dialog, int color) {
-
-                //선택 한 색을 변수에 담는다.
-                defaultColor = color;
-                Log.v("색깔코드 ", Integer.toHexString(defaultColor));
-                //색을 담은 변수를 배경색으로 설정한다.
-                adapter.setting_btn.setBackgroundColor(defaultColor);
-            }
-        });
-        colorPicker.show();
     }
 }

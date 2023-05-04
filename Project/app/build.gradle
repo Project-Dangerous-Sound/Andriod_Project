@@ -45,7 +45,7 @@ dependencies {
     implementation 'org.tensorflow:tensorflow-lite-support:0.4.3'
 
     //color picker
-    implementation 'com.github.yukuku:ambilwarna:2.0.1'
+    implementation "com.github.skydoves:colorpickerview:2.2.4"
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
