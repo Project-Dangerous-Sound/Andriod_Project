@@ -110,6 +110,9 @@ public class MainActivity extends AppCompatActivity {
     private float standfloat = 0.4f;
     private float priority_weight[] = {1.0f, 0.8f, 0.6f, 0.4f, 0.2f, 0f};
     private int color[] = {Color.DKGRAY, Color.rgb(0,0,0), Color.CYAN, Color.MAGENTA, Color.RED, Color.YELLOW};
+    private int imageSrc [] = {R.drawable.image1, R.drawable.image2,
+            R.drawable.image4, R.drawable.image5, R.drawable.image6,
+            R.drawable.image7, R.drawable.wave}; //이미지를 변경하기 위해서 이미지 소스를 배열로 저장
 
     private int mNumFrames;
     private int mSampleRate;
@@ -190,18 +193,38 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void Action(int index, int index2){
+        //2개의 소리 통과
         if (index2 != -1) {
             background1.setBackgroundColor(color[index]);
             background2.setBackgroundColor(color[index2]);
 
+            background1.setImageResource(imageSrc[index]);
+            background2.setImageResource(imageSrc[index2]);
+
             sound1.setText(map.get(index));
             sound2.setText(map.get(index2));
-
         }
-        else{
+        //하나의 소리만 통과
+        else if (index != -1 && index2 == -1){
             background1.setBackgroundColor(color[index]);
+            background1.setImageResource(imageSrc[index]);
+
+            background2.setBackgroundColor(Color.BLACK);
+            background2.setImageResource(imageSrc[6]);
 
             sound1.setText(map.get(index));
+            sound2.setText("소리 듣는중");
+        }
+        //둘다 통과하지 못했을때
+        else {
+            background1.setBackgroundColor(Color.BLACK);
+            background1.setImageResource(imageSrc[6]);
+
+            background2.setBackgroundColor(Color.BLACK);
+            background2.setImageResource(imageSrc[6]);
+
+            sound1.setText("소리 듣는중...");
+            sound2.setText("소리 듣는중...");
         }
         Log.v("위험한 소리: ", map.get(index));
         Vibrator vibrator1 = (Vibrator) getSystemService(VIBRATOR_SERVICE);
