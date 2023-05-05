@@ -19,13 +19,13 @@
         tools:ignore="MissingConstraints">
 
         <TextView
-            android:id="@+id/textView2"
+            android:id="@+id/textView1"
             android:layout_width="350dp"
             android:layout_height="80dp"
             android:background="@color/dark_gray"
             android:gravity="center_vertical"
 
-            android:text="Q. 사용하는 방법 안내"
+            android:text="Q. 사용하는 방법 및 어플 안내"
             android:textColor="@color/white"
             android:textSize="25dp"
             tools:ignore="MissingConstraints"
@@ -33,16 +33,81 @@
             tools:layout_editor_absoluteY="69dp" />
 
         <TextView
-            android:id="@+id/textView3"
+            android:id="@+id/textView2"
             android:layout_width="match_parent"
-            android:layout_height="379dp"
+            android:layout_height="wrap_content"
             android:background="@color/white"
-            android:text=" - 사용법 : 이 어플을 어떻게 사용하는지에 대한 내용 글귀 추가"
-            android:textColor="@color/black"
+            android:text="▷ 사용법"
+            android:textStyle="bold"
+            android:textColor="@color/actionbar_background"
             android:textSize="20dp"
 
             tools:layout_editor_absoluteX="30dp"
             tools:layout_editor_absoluteY="169dp" />
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:text="화재, 차경적, 사이렌, 맹견의 짖는 소리 등등"
+            android:textColor="#FF0000"
+            android:textSize="18dp"
+            android:textStyle="bold"
+
+            tools:layout_editor_absoluteX="30dp"
+            tools:layout_editor_absoluteY="169dp" />
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:text="위험 요소들을 암시하는 소리가 존재 또는 발생할 시, 개개인의 모바일 기기에 알림 및 진동을 주어 어떤 위험요소가 존재하는지 알려주는 어플입니다."
+            android:textColor="@color/black"
+            android:textSize="18dp"
+
+            tools:layout_editor_absoluteX="30dp"
+            tools:layout_editor_absoluteY="169dp" />
+
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="match_parent"
+            android:layout_height="94dp"
+            android:background="@color/white"
+            android:text="어플을 동작시켜 진동 및 알람을 켜 놓으면 자동으로 큰 소리들의 데시벨(dB)이 측정이 되어 위험요소들을 확인할 수 있습니다."
+            android:textColor="@color/black"
+            android:textSize="18dp"
+
+            tools:layout_editor_absoluteX="30dp"
+            tools:layout_editor_absoluteY="169dp" />
+
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:text="▷ 안내"
+            android:textStyle="bold"
+            android:textColor="@color/actionbar_background"
+            android:textSize="20dp"
+
+            tools:layout_editor_absoluteX="30dp"
+            tools:layout_editor_absoluteY="169dp" />
+
+        <TextView
+            android:id="@+id/textView7"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:text="이 앱(app)은 청각장애인들의 소리를 인지하지 못해 유발되는 사고 발생률을 감소시키고, 무선 이어폰으로 인한 사고 발생률을 줄이기 위해 개발된 어플입니다."
+            android:textColor="@color/black"
+            android:textSize="18dp"
+
+            tools:layout_editor_absoluteX="30dp"
+            tools:layout_editor_absoluteY="169dp" />
+
+
 
     </LinearLayout>
 
