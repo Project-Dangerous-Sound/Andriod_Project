@@ -21,6 +21,7 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -52,10 +53,16 @@ import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
 import java.nio.MappedByteBuffer;
+import java.util.concurrent.TimeUnit;
+
 public class MainActivity extends AppCompatActivity {
     static class Mapping implements Comparable<Mapping>{
         float value;
@@ -82,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
             while (true){
                 try{
                     startRecoding();
-                    Thread.sleep(1000);
+                    Threads.sleep(1000);
                     stopRecoding();
                 }
                 catch(InterruptedException e){
@@ -97,6 +104,26 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+    private class ActionThread extends Thread{
+        String audiopath;
+        boolean isaction_check = false;
+        public ActionThread(){
+
+        }
+        public void run(){
+            File audioFile = new File(audiopath);
+            ServerRequst(audioFile);
+            is_running = true;
+        }
+        public void setAudiopath(String audiopath){
+            this.audiopath = audiopath;
+        }
+        public void setIsaction_check(boolean isaction_check){
+            this.isaction_check = isaction_check;
+        }
+
+    }
+    private static int count;
     private Vibrator vibrator;
     private TextView sound1, sound2;
     private MFCC mfcc;
@@ -107,10 +134,13 @@ public class MainActivity extends AppCompatActivity {
     private AudioRecoding audioRecoding;
     private Map<Integer, String> map;
     private  DataPreprocessing dataPreprocessing;
+
     private float standfloat = 0.4f;
     private float priority_weight[] = {1.0f, 0.8f, 0.6f, 0.4f, 0.2f, 0f};
     private int color[] = {Color.DKGRAY, Color.rgb(0,0,0), Color.CYAN, Color.MAGENTA, Color.RED, Color.YELLOW};
-
+    private Threads threads;
+    private ActionThread actionThread;
+    private boolean is_running;
     private int mNumFrames;
     private int mSampleRate;
     private int mChannels;
@@ -127,13 +157,9 @@ public class MainActivity extends AppCompatActivity {
         double spectrum[] = dataPreprocessing.spectrumprocesing(wav_path);
         float meanMFCCValues[][] = dataPreprocessing.mfccprocesing(spectrum);
         long end = System.currentTimeMillis();
-        Log.v("데이터 전처리 시간 측정", Long.toString((end - start) / 1000));
         start = System.currentTimeMillis();
         boolean isCheck = loadModdelANDprediction(meanMFCCValues);
         end = System.currentTimeMillis();
-        if (isCheck) Log.v("소리확인", "처리음");
-        else Log.v("소리확인", "비처리음");
-        Log.v("모델 실행시간 측정", Long.toString((end - start) / 1000));
         return isCheck;
     }
     private boolean loadModdelANDprediction(float [][] meanMFCC) throws IOException {
@@ -141,14 +167,12 @@ public class MainActivity extends AppCompatActivity {
         Interpreter tflite;
 
         Interpreter.Options tfliteOption = new Interpreter.Options();
-        tfliteOption.setNumThreads(2);
+        tfliteOption.setNumThreads(1);
         tflite = new Interpreter(tflitemodel, tfliteOption);
 
         int imageTensorIndex = 0;
         int [] imgeShape = tflite.getInputTensor(imageTensorIndex).shape();
         DataType imgeDataType = tflite.getInputTensor(imageTensorIndex).dataType();
-        Log.v("확인", Integer.toString(imgeShape[0]) + " " + Integer.toString(imgeShape[1]) + " " + Integer.toString(imgeShape[2]) + " " + Integer.toString(imgeShape[3]));
-        Log.v("확인", Integer.toString(meanMFCC.length) + " " + Integer.toString(meanMFCC[0].length));
         int probabilityTensorIndex = 0;
         int probabilityShape[] = tflite.getOutputTensor(probabilityTensorIndex).shape();
         DataType probabilityDataType = tflite.getOutputTensor(probabilityTensorIndex).dataType();
@@ -165,7 +189,9 @@ public class MainActivity extends AppCompatActivity {
         float[] result = outputTensorBuffer.getFloatArray();
         float nonsound = Math.abs(1.0f - result[0]);
         float checksound = Math.abs(1.0f - result[1]);
-        Log.v("모델결과 확인", Float.toString(result[0]) + " " + Float.toString(result[1]));
+        String non = String.format("%.2f", nonsound);
+        String check = String.format("%.2f", checksound);
+        String s = non + " " + check;
         return checksound < nonsound;
     }
     private void Weight_calc(float[] softmax) throws JSONException {
@@ -173,7 +199,6 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0;i<softmax.length;i++)
             if (softmax[i] >= standfloat) {
                 list.add(new Mapping(softmax[i], i));
-                Log.v("통과", Integer.toString(i) + " " + Float.toString(softmax[i]) + map.get(i));
             }
         String priorityName[] = HomeScreen.singleton.priorityjson.getPriority();
 
@@ -185,8 +210,9 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         Collections.sort(list);
+
         if (list.size() > 1) Action(list.get(0).index, list.get(1).index);
-        else Action(list.get(0).index, -1);
+        else if (list.size() == 1)Action(list.get(0).index, -1);
     }
 
     private void Action(int index, int index2){
@@ -203,17 +229,22 @@ public class MainActivity extends AppCompatActivity {
 
             sound1.setText(map.get(index));
         }
-        Log.v("위험한 소리: ", map.get(index));
         Vibrator vibrator1 = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         vibrator1.vibrate(VibrationEffect.createOneShot(1000, 50));
+        is_running = false;
     }
     private void ServerRequst(File audioFile){
-        Log.v("BackEnd", "서버로 .wav파일 보냄");
         RequestBody requestBody = RequestBody.create(MediaType.parse("audio/wav"), audioFile);
         MultipartBody.Part audioPart = MultipartBody.Part.createFormData("audio", audioFile.getName(), requestBody);
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .connectTimeout(90, TimeUnit.SECONDS)
+                .readTimeout(90, TimeUnit.SECONDS)
+                .writeTimeout(90, TimeUnit.SECONDS)
+                .build();
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://15.164.76.29:5000")
                 .addConverterFactory(GsonConverterFactory.create())
+                .client(okHttpClient)
                 .build();
 
         MyApi myApi = retrofit.create(MyApi.class);
@@ -223,36 +254,43 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
                 ApiResponse result = response.body();
-
-                /*float softmax[] = new float[6];
-                for (int i = 0;i<6;i++) softmax[i] = (float)Math.random();
+                Log.v("서버로 부터 받음", "서버로 받음");
+                audioFile.delete();
+                String softemax_string = result.getMessage();
+                String softmax_arr[] = softemax_string.split(" ");
+                float softmax[] = new float[6];
+                for (int i = 0;i<6;i++){
+                    softmax[i] = Float.parseFloat(softmax_arr[i]);
+                }
                 try {
                     Weight_calc(softmax);
                 } catch (JSONException e) {
                     throw new RuntimeException(e);
-                }*/
-                Log.v("성공메세지", Integer.toString(result.getMessage().length));
-                Log.v("확인", "서버에서 받음");
+                }
             }
 
             @Override
-            public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Log.v("실패메세지", t.getMessage());
+                public void onFailure(Call<ApiResponse> call, Throwable t) {
+                MainActivity.this.runOnUiThread(new Runnable() {
+                    public void run() {
+                        Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+                is_running = false;
             }
         });
     }
 
     private void startRecoding(){
-        Log.v("녹음", "녹음 시작");
         audioRecoding = new AudioRecoding();
-        audioRecoding.startRecording(getExternalFilesDir(null).getAbsolutePath(), "recoding", this);
+        String s = "recoding" + Integer.toString(count);
+        audioRecoding.startRecording(getExternalFilesDir(null).getAbsolutePath(), s, this);
+        count++;
     }
 
     private void stopRecoding() throws JSONException, IOException, WavFileException {
         audioRecoding.stopRecode();
-        String audiopath = audioRecoding.getBrekSound();
-        Log.v("녹음", "녹음 중지");
-        Log.v("파일 위치", audiopath);
+        String audiopath = audioRecoding.getOutputpath();
         uploadAudioFile(audiopath);
     }
     private void uploadAudioFile(String audioFilePath) throws JSONException, IOException, WavFileException {
@@ -265,15 +303,12 @@ public class MainActivity extends AppCompatActivity {
             throw new RuntimeException(e);
         }
         if(create) {
+            actionThread.setAudiopath(audioFilePath);
+            if (!is_running)  actionThread.run();
+        }
+        else{
             File audioFile = new File(audioFilePath);
-            float softmax[] = new float[6];
-            for (int i = 0;i<6;i++) softmax[i] = (float)Math.random();
-            try {
-                Weight_calc(softmax);
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            }
-            ServerRequst(audioFile);
+            audioFile.delete();
         }
     }
 
@@ -335,25 +370,18 @@ public class MainActivity extends AppCompatActivity {
 
         Button recodeingstartbutton = (Button) findViewById(R.id.button);
         Button recodeingstopbutton = (Button) findViewById(R.id.button2);
-        Threads threads = new Threads();
+        threads = new Threads();
+        actionThread = new ActionThread();
         recodeingstartbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startRecoding();
+                Start_Message();
             }
         });
         recodeingstopbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try {
-                    stopRecoding();
-                } catch (JSONException e) {
-                    throw new RuntimeException(e);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                } catch (WavFileException e) {
-                    throw new RuntimeException(e);
-                }
+                End_Message();
             }
         });
         // getSupportActionBar().setDisplayShowTitleEnabled(false); 툴바 글자 안보이게 만들어주는 코드
@@ -370,7 +398,45 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
+    private void Start_Message(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("녹음을 시작하시겠습니까?")
+                .setCancelable(false)
+                .setPositiveButton("예", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // 종료 버튼을 눌렀을 때 앱을 종료합니다.
+                        threads.start();
+                    }
+                })
+                .setNegativeButton("아니오", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // 취소 버튼을 눌렀을 때 다이얼로그를 닫습니다.
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+    private void End_Message(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("녹음을 종료하시겠습니까?")
+                .setCancelable(false)
+                .setPositiveButton("예", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // 종료 버튼을 눌렀을 때 앱을 종료합니다.
+                        threads.interrupt();
+                        actionThread.interrupt();
+                    }
+                })
+                .setNegativeButton("아니오", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // 취소 버튼을 눌렀을 때 다이얼로그를 닫습니다.
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grandResults) {
         // READ_PHONE_STATE의 권한 체크 결과를 불러온다

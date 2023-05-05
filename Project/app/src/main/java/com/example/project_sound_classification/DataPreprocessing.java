@@ -51,8 +51,6 @@ public class DataPreprocessing {
             }
             meanBuffer[q]=Double.parseDouble(df.format(frameVal/mChannels));
         }
-        Log.v("크기 확인", Integer.toString(mNumFrames));
-        Log.v("크기 확인", Integer.toString(mChannels) + " " + Integer.toString(mSampleRate));
         return meanBuffer;
     }
 
