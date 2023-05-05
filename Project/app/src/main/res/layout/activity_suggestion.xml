@@ -19,7 +19,7 @@
         tools:ignore="MissingConstraints">
 
         <TextView
-            android:id="@+id/textView2"
+            android:id="@+id/textView1"
             android:layout_width="350dp"
             android:layout_height="80dp"
             android:background="@color/dark_gray"
@@ -33,13 +33,39 @@
             tools:layout_editor_absoluteY="69dp" />
 
         <TextView
+            android:id="@+id/textView2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:text="▷ 건의사항"
+            android:textStyle="bold"
+            android:textColor="@color/actionbar_background"
+            android:textSize="20dp"
+
+            tools:layout_editor_absoluteX="30dp"
+            tools:layout_editor_absoluteY="169dp" />
+
+        <TextView
             android:id="@+id/textView3"
             android:layout_width="match_parent"
-            android:layout_height="379dp"
+            android:layout_height="60dp"
             android:background="@color/white"
-            android:text=" - 건의사항 안내 : 건의사항 관련 글귀 추가"
+            android:text="어플에 관한 추가적인 건의사항은 아래 홈페이지로 이동하여 게시판에 작성해주십시오."
             android:textColor="@color/black"
-            android:textSize="20dp"
+            android:textSize="18dp"
+
+            tools:layout_editor_absoluteX="30dp"
+            tools:layout_editor_absoluteY="169dp" />
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:background="@color/white"
+            android:text="URL : https://portal.koreatech.ac.kr/p/STHOME/"
+            android:textColor="@color/black"
+            android:textSize="16dp"
+            android:textStyle="bold"
 
             tools:layout_editor_absoluteX="30dp"
             tools:layout_editor_absoluteY="169dp" />
