@@ -6,11 +6,11 @@ public class Soundlist {
     int priority;
     int color;
 
-    public Soundlist(int image, String name, int priority/*, int color*/){
+    public Soundlist(int image, String name, int priority, int color){
         this.image = image;
         this.name = name;
         this.priority = priority;
-        //this.color = color;
+        this.color = color;
     }
 
     public int getImage() {

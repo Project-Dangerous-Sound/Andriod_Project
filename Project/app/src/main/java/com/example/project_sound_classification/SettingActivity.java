@@ -21,10 +21,9 @@ import java.io.IOException;
 
 public class SettingActivity extends AppCompatActivity {
     static RecyclerView setting_rv;
-    ItemTouchHelper helper;
     SettingListAdapter adapter = new SettingListAdapter(this);
     String soundname[] = new String[7];
-    int color[] = new int[7];
+    int color[] = {Color.DKGRAY, Color.rgb(0,0,0), Color.CYAN, Color.MAGENTA, Color.RED, Color.YELLOW, Color.WHITE};
     static Json priorityjson;
     int defaultColor;
 
@@ -66,7 +65,7 @@ public class SettingActivity extends AppCompatActivity {
             throw new RuntimeException(e);
         }
         for (int i = 0;i<7;i++){
-            adapter.addItem(new Soundlist(HomeScreen.singleton.map.get(soundname[i]), soundname[i],i + 1/*, color[i]*/));
+            adapter.addItem(new Soundlist(HomeScreen.singleton.map.get(soundname[i]), soundname[i],i + 1, color[i]));
         }
         //RecyclerView의 Adapter 세팅
         setting_rv.setAdapter(adapter);

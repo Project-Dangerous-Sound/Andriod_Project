@@ -1,5 +1,6 @@
 package com.example.project_sound_classification;
 
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,7 +23,7 @@ public class PriorityActivity extends AppCompatActivity {
     ItemTouchHelper helper;
     ListAdapter adapter = new ListAdapter();
     String soundname[] = new String[7];
-    //int color[] = new int[7];
+    int color[] = {Color.DKGRAY, Color.rgb(0,0,0), Color.CYAN, Color.MAGENTA, Color.RED, Color.YELLOW, Color.WHITE};
     static Json priorityjson;
 
     static public void reset(){
@@ -63,7 +64,7 @@ public class PriorityActivity extends AppCompatActivity {
             throw new RuntimeException(e);
         }
         for (int i = 0;i<7;i++){
-            adapter.addItem(new Soundlist(HomeScreen.singleton.map.get(soundname[i]), soundname[i],i + 1/*, color[i]*/));
+            adapter.addItem(new Soundlist(HomeScreen.singleton.map.get(soundname[i]), soundname[i],i + 1, color[i]));
         }
         HomeScreen.singleton.setItemTouchHelperCallback(adapter);
 
