@@ -19,7 +19,7 @@
         tools:ignore="MissingConstraints">
 
         <TextView
-            android:id="@+id/textView2"
+            android:id="@+id/textView1"
             android:layout_width="350dp"
             android:layout_height="80dp"
             android:background="@color/dark_gray"
@@ -33,16 +33,102 @@
             tools:layout_editor_absoluteY="69dp" />
 
         <TextView
-            android:id="@+id/textView3"
+            android:id="@+id/textView2"
             android:layout_width="match_parent"
-            android:layout_height="379dp"
+            android:layout_height="wrap_content"
             android:background="@color/white"
-            android:text=" - 개발자 정보 : 개발자 정보에 대한 내용 글귀 추가"
-            android:textColor="@color/black"
+            android:text="▷ AI"
+            android:textStyle="bold"
+            android:textColor="@color/actionbar_background"
             android:textSize="20dp"
 
             tools:layout_editor_absoluteX="30dp"
             tools:layout_editor_absoluteY="169dp" />
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:text="- 김상우(harmonics9806@gmail.com)"
+            android:textColor="@color/black"
+            android:textSize="18dp"
+
+            tools:layout_editor_absoluteX="30dp"
+            tools:layout_editor_absoluteY="169dp" />
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@color/white"
+            android:text="- 김문웅(qnsdnd8964@gmail.com)"
+            android:textColor="@color/black"
+            android:textSize="18dp"
+
+            tools:layout_editor_absoluteX="30dp"
+            tools:layout_editor_absoluteY="169dp" />
+
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:text="▷ Frontend"
+            android:textStyle="bold"
+            android:textColor="@color/actionbar_background"
+            android:textSize="20dp"
+
+            tools:layout_editor_absoluteX="30dp"
+            tools:layout_editor_absoluteY="169dp" />
+
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:text="- 김성원(worni@gmail.com)"
+            android:textColor="@color/black"
+            android:textSize="18dp"
+
+            tools:layout_editor_absoluteX="30dp"
+            tools:layout_editor_absoluteY="169dp" />
+        <TextView
+            android:id="@+id/textView7"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@color/white"
+            android:text="- 손영진(younggin446@gmail.com)"
+            android:textColor="@color/black"
+            android:textSize="18dp"
+
+            tools:layout_editor_absoluteX="30dp"
+            tools:layout_editor_absoluteY="169dp" />
+
+        <TextView
+            android:id="@+id/textView8"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:text="▷ Backend"
+            android:textStyle="bold"
+            android:textColor="@color/actionbar_background"
+            android:textSize="20dp"
+
+            tools:layout_editor_absoluteX="30dp"
+            tools:layout_editor_absoluteY="169dp" />
+
+        <TextView
+            android:id="@+id/textView9"
+            android:layout_width="match_parent"
+            android:layout_height="65dp"
+            android:background="@color/white"
+            android:text="- 차주원(joowon990615@gmail.com)"
+            android:textColor="@color/black"
+            android:textSize="18dp"
+
+            tools:layout_editor_absoluteX="30dp"
+            tools:layout_editor_absoluteY="169dp" />
+
 
     </LinearLayout>
 
