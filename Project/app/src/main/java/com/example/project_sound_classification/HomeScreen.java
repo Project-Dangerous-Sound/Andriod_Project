@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import androidx.fragment.app.Fragment;
 
 import com.example.project_sound_classification.databinding.HomeScreenBinding;
+import com.example.project_sound_classification.databinding.HomeScreenOneBinding;
 
 import org.json.JSONException;
 
@@ -19,6 +20,7 @@ import java.io.IOException;
 public class HomeScreen extends Fragment {
 
     private HomeScreenBinding binding;
+    private HomeScreenOneBinding binding2;
     static Singleton singleton;
     static Json priorityjson;
     @Override
@@ -28,6 +30,7 @@ public class HomeScreen extends Fragment {
     ) {
 
         binding = HomeScreenBinding.inflate(inflater, container, false);
+        binding2 = HomeScreenOneBinding.inflate(inflater, container, false);
         if (singleton == null) singleton = new Singleton();
         return binding.getRoot();
 
