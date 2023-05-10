@@ -147,36 +147,5 @@ public class SettingListAdapter extends RecyclerView.Adapter<SettingListAdapter.
             list_color.setBackgroundColor(sounlist.getColor());
             list_image.setImageResource(sounlist.getImage());
         }
-
-
-
-        private void showColorPickerDialog(final int position) {
-            ColorPickerDialog.Builder builder = new ColorPickerDialog.Builder(mContext);
-            new ColorPickerDialog.Builder(mContext)
-                    .setTitle("ColorPicker Dialog")
-                    .setPreferenceName("MyColorPickerDialog")
-                    .setPositiveButton(mContext.getString(R.string.confirm),
-                            new ColorEnvelopeListener() {
-                                @Override
-                                public void onColorSelected(ColorEnvelope envelope, boolean fromUser) {
-                                    Log.v("색상 코드",envelope.getHexCode());
-                                    Log.v("인덱스",Integer.toString(getAdapterPosition()));
-                                }
-                            })
-                    .setNegativeButton(mContext.getString(R.string.cancel),
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    dialogInterface.dismiss();
-                                }
-                            })
-                    .attachAlphaSlideBar(true) // the default value is true.
-                    .attachBrightnessSlideBar(true)  // the default value is true.
-                    .setBottomSpace(12) // set a bottom space between the last slidebar and buttons.
-                    .show();
-
-            // ColorPickerDialog를 보여줍니다.
-            builder.show();
-        }
     }
 }

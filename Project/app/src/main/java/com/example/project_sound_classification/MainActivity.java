@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
     private Vibrator vibrator;
     private TextView sound1, sound2;
     private MFCC mfcc;
-    private ImageView background1, background2;
+    private ImageView background1, background2, background_one;
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
@@ -206,14 +206,16 @@ public class MainActivity extends AppCompatActivity {
         }
         //하나의 소리만 통과
         else if (index != -1 && index2 == -1){
-            background1.setBackgroundColor(color[index]);
-            background1.setImageResource(imageSrc[index]);
+            background_one.setBackgroundColor(color[index]);
+            background_one.setImageResource(imageSrc[index]);
 
             background2.setBackgroundColor(Color.BLACK);
             background2.setImageResource(imageSrc[6]);
 
             sound1.setText(map.get(index));
             sound2.setText("소리 듣는중");
+
+            Log.v("소리","1개 통과");
         }
         //둘다 통과하지 못했을때
         else {
@@ -317,10 +319,9 @@ public class MainActivity extends AppCompatActivity {
         }
         dataPreprocessing = new DataPreprocessing();
 
-        //textView = findViewById(R.id.textview_first);
-        //bacground = findViewById(R.id.background);
         background1 = findViewById(R.id.background1);
         background2 = findViewById(R.id.background2);
+        background_one = findViewById(R.id.background_one);
 
         sound1 = findViewById(R.id.sound1);
         sound2 = findViewById(R.id.sound2);
