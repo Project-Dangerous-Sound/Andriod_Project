@@ -35,6 +35,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.project_sound_classification.audiofeature.MFCC;
 import com.example.project_sound_classification.databinding.ActivityMainBinding;
+import com.example.project_sound_classification.databinding.HomeScreenOneBinding;
 import com.example.project_sound_classification.librosafeature.WavFileException;
 
 import okhttp3.*;
@@ -195,6 +196,13 @@ public class MainActivity extends AppCompatActivity {
     private void Action(int index, int index2){
         //2개의 소리 통과
         if (index2 != -1) {
+            setContentView(R.layout.home_screen);
+            background1 = findViewById(R.id.background1);
+            background2 = findViewById(R.id.background2);
+
+            sound1 = findViewById(R.id.sound1);
+            sound2 = findViewById(R.id.sound2);
+            //--------------------------------------//
             background1.setBackgroundColor(color[index]);
             background2.setBackgroundColor(color[index2]);
 
@@ -203,31 +211,70 @@ public class MainActivity extends AppCompatActivity {
 
             sound1.setText(map.get(index));
             sound2.setText(map.get(index2));
+            //====================================//
+            Button recodeingstartbutton = (Button) findViewById(R.id.button);
+            Button recodeingstopbutton = (Button) findViewById(R.id.button2);
+
+            Threads threads = new Threads();
+            recodeingstartbutton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    startRecoding();
+                }
+            });
+            recodeingstopbutton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    try {
+                        stopRecoding();
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (WavFileException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
         }
         //하나의 소리만 통과
-        else if (index != -1 && index2 == -1){
-            background_one.setBackgroundColor(color[index]);
-            background_one.setImageResource(imageSrc[index]);
+        else {
+            setContentView(R.layout.home_screen_one);
+            background_one = findViewById(R.id.background_one);
+            if (background_one != null) {
+                background_one.setBackgroundColor(color[index]);
+                background_one.setImageResource(imageSrc[index]);
+            } else {
+                Log.v("MyActivity", "ImageView is null");
+            }
+            Button recodeingstartbutton1 = (Button) findViewById(R.id.button_one);
+            Button recodeingstopbutton1 = (Button) findViewById(R.id.button_two);
 
-            background2.setBackgroundColor(Color.BLACK);
-            background2.setImageResource(imageSrc[6]);
-
-            sound1.setText(map.get(index));
-            sound2.setText("소리 듣는중");
+            Threads threads = new Threads();
+            recodeingstartbutton1.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    startRecoding();
+                }
+            });
+            recodeingstopbutton1.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    try {
+                        stopRecoding();
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (WavFileException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
 
             Log.v("소리","1개 통과");
         }
         //둘다 통과하지 못했을때
-        else {
-            background1.setBackgroundColor(Color.BLACK);
-            background1.setImageResource(imageSrc[6]);
-
-            background2.setBackgroundColor(Color.BLACK);
-            background2.setImageResource(imageSrc[6]);
-
-            sound1.setText("소리 듣는중...");
-            sound2.setText("소리 듣는중...");
-        }
         Log.v("위험한 소리: ", map.get(index));
         Vibrator vibrator1 = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         vibrator1.vibrate(VibrationEffect.createOneShot(1000, 50));
@@ -321,10 +368,10 @@ public class MainActivity extends AppCompatActivity {
 
         background1 = findViewById(R.id.background1);
         background2 = findViewById(R.id.background2);
-        background_one = findViewById(R.id.background_one);
 
         sound1 = findViewById(R.id.sound1);
         sound2 = findViewById(R.id.sound2);
+
 
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
@@ -359,6 +406,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button recodeingstartbutton = (Button) findViewById(R.id.button);
         Button recodeingstopbutton = (Button) findViewById(R.id.button2);
+
         Threads threads = new Threads();
         recodeingstartbutton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -380,6 +428,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
         // getSupportActionBar().setDisplayShowTitleEnabled(false); 툴바 글자 안보이게 만들어주는 코드
 
         getSupportActionBar().setTitle("위험한 소리 알리미"); // 제목 변경
