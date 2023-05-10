@@ -87,6 +87,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ItemViewHolder
     }
     @Override
     public void onItemSwipe(int position) {
+
     }
 
     class ItemViewHolder extends RecyclerView.ViewHolder {

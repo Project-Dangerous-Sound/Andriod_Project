@@ -28,7 +28,11 @@ public class HomeScreen extends Fragment {
     ) {
 
         binding = HomeScreenBinding.inflate(inflater, container, false);
-        if (singleton == null) singleton = new Singleton();
+        if (singleton == null){
+            singleton = new Singleton();
+            singleton.BaseDataBase();
+        }
+
         return binding.getRoot();
 
     }

@@ -124,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
     private static int count;
+    private static int checkCount = 0;
     private Vibrator vibrator;
     private TextView sound1, sound2;
     private MFCC mfcc;
@@ -138,6 +139,10 @@ public class MainActivity extends AppCompatActivity {
     private float standfloat = 0.4f;
     private float priority_weight[] = {1.0f, 0.8f, 0.6f, 0.4f, 0.2f, 0f};
     private int color[] = {Color.DKGRAY, Color.rgb(0,0,0), Color.CYAN, Color.MAGENTA, Color.RED, Color.YELLOW};
+    private int imageSrc [] = {R.drawable.image1, R.drawable.image2,
+            R.drawable.image4, R.drawable.image5, R.drawable.image6,
+            R.drawable.image7, R.drawable.wave}; //이미지를 변경하기 위해서 이미지 소스를 배열로 저장
+
     private Threads threads;
     private ActionThread actionThread;
     private boolean is_running;
@@ -153,13 +158,9 @@ public class MainActivity extends AppCompatActivity {
         map.put(5, "비상경보");
     }
     private boolean data_preprocessing_and_pridiction(String wav_path) throws IOException, WavFileException {
-        long start = System.currentTimeMillis();
         double spectrum[] = dataPreprocessing.spectrumprocesing(wav_path);
         float meanMFCCValues[][] = dataPreprocessing.mfccprocesing(spectrum);
-        long end = System.currentTimeMillis();
-        start = System.currentTimeMillis();
         boolean isCheck = loadModdelANDprediction(meanMFCCValues);
-        end = System.currentTimeMillis();
         return isCheck;
     }
     private boolean loadModdelANDprediction(float [][] meanMFCC) throws IOException {
@@ -187,12 +188,13 @@ public class MainActivity extends AppCompatActivity {
         TensorBuffer outputTensorBuffer = TensorBuffer.createFixedSize(probabilityShape,probabilityDataType);
         tflite.run(inputBuffer1, outputTensorBuffer.getBuffer());
         float[] result = outputTensorBuffer.getFloatArray();
-        float nonsound = Math.abs(1.0f - result[0]);
-        float checksound = Math.abs(1.0f - result[1]);
+        float nonsound =  result[0];
+        float checksound = result[1];
         String non = String.format("%.2f", nonsound);
         String check = String.format("%.2f", checksound);
         String s = non + " " + check;
-        return checksound < nonsound;
+        //Log.v("확인", Float.toString(sum) + " " + Float.toString(nonsound) + " " + Float.toString(checksound));
+        return checksound - nonsound >= 0.2f;
     }
     private void Weight_calc(float[] softmax) throws JSONException {
         List<Mapping> list = new ArrayList<>();
@@ -220,14 +222,21 @@ public class MainActivity extends AppCompatActivity {
             background1.setBackgroundColor(color[index]);
             background2.setBackgroundColor(color[index2]);
 
+            background1.setImageResource(imageSrc[index]);
+            background2.setImageResource(imageSrc[index2]);
+
             sound1.setText(map.get(index));
             sound2.setText(map.get(index2));
 
         }
         else{
             background1.setBackgroundColor(color[index]);
+            background1.setImageResource(imageSrc[index]);
 
+            background2.setBackgroundColor(Color.BLACK);
+            background2.setImageResource(imageSrc[6]);
             sound1.setText(map.get(index));
+            sound2.setText("소리 듣는중");
         }
         Vibrator vibrator1 = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         vibrator1.vibrate(VibrationEffect.createOneShot(1000, 50));
@@ -270,12 +279,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-                public void onFailure(Call<ApiResponse> call, Throwable t) {
-                MainActivity.this.runOnUiThread(new Runnable() {
-                    public void run() {
-                        Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
                 is_running = false;
             }
         });

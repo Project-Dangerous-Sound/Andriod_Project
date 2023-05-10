@@ -11,7 +11,9 @@ public class Singleton {
     ListAdapter adapter;
     Json priorityjson;
     Map<String, Integer> map = new HashMap<>();
+    DataBase dataBase;
     public Singleton(){
+        dataBase = new DataBase();
         createList();
         itemTouchHelperCallback = new ItemTouchHelperCallback(adapter, adapter);
     }
@@ -30,6 +32,9 @@ public class Singleton {
         map.put("화재경보", R.drawable.image5);
         map.put("도난경보", R.drawable.image6);
         map.put("비상경보", R.drawable.image7);
+    }
+    public void BaseDataBase(){
+        dataBase.BaseSetting();
     }
 
 
