@@ -1,6 +1,10 @@
 package com.example.project_sound_classification;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,6 +14,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.Log;
@@ -24,9 +29,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -53,6 +60,7 @@ import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -79,11 +87,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class Threads extends Thread{
+    public class Threads extends Thread{
         public Threads(){
 
         }
-
         public void run(){
 
             while (true){
@@ -121,21 +128,19 @@ public class MainActivity extends AppCompatActivity {
         public void setIsaction_check(boolean isaction_check){
             this.isaction_check = isaction_check;
         }
-
     }
     private static int count;
-    private static int checkCount = 0;
+    private static boolean forground = false;
     private Vibrator vibrator;
     private TextView sound1, sound2;
-    private MFCC mfcc;
-    private ImageView background1, background2;
-
+    private ImageView background1, background2, background_one;
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
     private AudioRecoding audioRecoding;
     private Map<Integer, String> map;
     private  DataPreprocessing dataPreprocessing;
-
+    private static String CHANNEL_ID = "channel1";
+    private static String CHANEL_NAME = "Channel1";
     private float standfloat = 0.4f;
     private float priority_weight[] = {1.0f, 0.8f, 0.6f, 0.4f, 0.2f, 0f};
     private int color[] = {Color.DKGRAY, Color.rgb(0,0,0), Color.CYAN, Color.MAGENTA, Color.RED, Color.YELLOW};
@@ -193,6 +198,11 @@ public class MainActivity extends AppCompatActivity {
         String non = String.format("%.2f", nonsound);
         String check = String.format("%.2f", checksound);
         String s = non + " " + check;
+        MainActivity.this.runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
+            }
+        });
         //Log.v("확인", Float.toString(sum) + " " + Float.toString(nonsound) + " " + Float.toString(checksound));
         return checksound - nonsound >= 0.2f;
     }
@@ -202,11 +212,11 @@ public class MainActivity extends AppCompatActivity {
             if (softmax[i] >= standfloat) {
                 list.add(new Mapping(softmax[i], i));
             }
-        String priorityName[] = HomeScreen.singleton.priorityjson.getPriority();
-
+        Soundlist soundlist[] = HomeScreen.singleton.dataBase.currentSoundDatabase();
+        Arrays.sort(soundlist);
         for(int i = 0;i<6;i++){
             for (Mapping mapping: list){
-                if (map.get(mapping.index).equals(priorityName[i])){
+                if (map.get(mapping.index).equals(soundlist[i].name)){
                     mapping.value += priority_weight[i];
                 }
             }
@@ -218,29 +228,64 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void Action(int index, int index2){
-        if (index2 != -1) {
-            background1.setBackgroundColor(color[index]);
-            background2.setBackgroundColor(color[index2]);
+        if(!forground) {
+            if (index2 != -1) {
+                background1.setBackgroundColor(color[index]);
+                background2.setBackgroundColor(color[index2]);
 
-            background1.setImageResource(imageSrc[index]);
-            background2.setImageResource(imageSrc[index2]);
+                background1.setImageResource(imageSrc[index]);
+                background2.setImageResource(imageSrc[index2]);
 
-            sound1.setText(map.get(index));
-            sound2.setText(map.get(index2));
+                sound1.setText(map.get(index));
+                sound2.setText(map.get(index2));
 
+            } else {
+                background_one.setBackgroundColor(color[index]);
+                background_one.setImageResource(imageSrc[index]);
+
+                background2.setBackgroundColor(Color.BLACK);
+                background2.setImageResource(imageSrc[6]);
+
+                sound1.setText(map.get(index));
+                sound2.setText("소리 듣는중");
+            }
         }
         else{
-            background1.setBackgroundColor(color[index]);
-            background1.setImageResource(imageSrc[index]);
-
-            background2.setBackgroundColor(Color.BLACK);
-            background2.setImageResource(imageSrc[6]);
-            sound1.setText(map.get(index));
-            sound2.setText("소리 듣는중");
+            String s = "위험 소리 감지: " + map.get(index);
+            showAleam(s);
         }
         Vibrator vibrator1 = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         vibrator1.vibrate(VibrationEffect.createOneShot(1000, 50));
         is_running = false;
+    }
+    private void showAleam(String s){
+        NotificationManager manager;
+        NotificationCompat.Builder builder;
+        manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        //버전 오레오 이상일 경우
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            manager.createNotificationChannel(
+                    new NotificationChannel(CHANNEL_ID, CHANEL_NAME, NotificationManager.IMPORTANCE_DEFAULT)
+            );
+
+            builder = new NotificationCompat.Builder(this,CHANNEL_ID);
+
+            //하위 버전일 경우
+        }else{
+            builder = new NotificationCompat.Builder(this);
+        }
+
+        //알림창 제목
+        builder.setContentTitle("알림");
+
+        //알림창 메시지
+        builder.setContentText(s);
+
+
+        Notification notification = builder.build();
+
+        //알림창 실행
+        manager.notify(1,notification);
     }
     private void ServerRequst(File audioFile){
         RequestBody requestBody = RequestBody.create(MediaType.parse("audio/wav"), audioFile);
@@ -323,20 +368,15 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        try {
-            if(HomeScreen.singleton.priorityjson == null)
-                HomeScreen.singleton.setPriorityjson(new Json(this));
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
         dataPreprocessing = new DataPreprocessing();
 
+
+        forground = false;
         //textView = findViewById(R.id.textview_first);
         //bacground = findViewById(R.id.background);
         background1 = findViewById(R.id.background1);
         background2 = findViewById(R.id.background2);
+        background_one = findViewById(R.id.background_one);
 
         sound1 = findViewById(R.id.sound1);
         sound2 = findViewById(R.id.sound2);
@@ -427,15 +467,26 @@ public class MainActivity extends AppCompatActivity {
                 .setCancelable(false)
                 .setPositiveButton("예", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        // 종료 버튼을 눌렀을 때 앱을 종료합니다.
                         threads.interrupt();
                         actionThread.interrupt();
                     }
                 })
                 .setNegativeButton("아니오", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        // 취소 버튼을 눌렀을 때 다이얼로그를 닫습니다.
                         dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+    private void Ready_Message(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("현재 준비중입니다.")
+                .setCancelable(false)
+                .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // 종료 버튼을 눌렀을 때 앱을 종료합니다.
+
                     }
                 });
         AlertDialog alert = builder.create();
@@ -530,8 +581,9 @@ public class MainActivity extends AppCompatActivity {
 
         // 알림우선순위 버튼을 클릭 시
         if (id == R.id.Priorty) {
-            Intent intent = new Intent(MainActivity.this, PriorityActivity.class);
-            startActivity(intent);
+            Ready_Message();
+            /*Intent intent = new Intent(MainActivity.this, PriorityActivity.class);
+            startActivity(intent);*/
             return true;
         }
 

@@ -82,7 +82,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ItemViewHolder
         }
         //Adapter에 데이터 이동알림
         notifyItemMoved(from_position, to_position);
-        HomeScreen.singleton.priorityjson.setPriority(soundname);
+        HomeScreen.singleton.dataBase.setDatabase(soundname);
         return true;
     }
     @Override
@@ -105,7 +105,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ItemViewHolder
         public void onBind(Soundlist sounlist) {
             list_name.setText(sounlist.getName());
             list_age.setText(String.valueOf(sounlist.getPriority()));
-            list_image.setImageResource(sounlist.getImage());
+            list_image.setImageResource(HomeScreen.singleton.map.get(sounlist.name));
         }
     }
 }

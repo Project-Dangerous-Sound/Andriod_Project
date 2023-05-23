@@ -145,7 +145,7 @@ public class SettingListAdapter extends RecyclerView.Adapter<SettingListAdapter.
         public void onBind(Soundlist sounlist) {
             list_name.setText(sounlist.getName());
             list_color.setBackgroundColor(sounlist.getColor());
-            list_image.setImageResource(sounlist.getImage());
+            list_image.setImageResource(HomeScreen.singleton.map.get(sounlist.name));
         }
     }
 }
