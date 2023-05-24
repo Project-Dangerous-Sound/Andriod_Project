@@ -50,7 +50,7 @@ public class SettingActivity extends AppCompatActivity {
         LinearLayoutManager manager = new LinearLayoutManager(this);
         manager.setOrientation(LinearLayoutManager.VERTICAL);
         setting_rv.setLayoutManager(manager);
-        soundname = HomeScreen.singleton.dataBase.currentSoundDatabase();
+        soundname = HomeScreen.singleton.getSoundlist();
         for (int i = 0;i<6;i++){
             adapter.addItem(soundname[i]);
         }

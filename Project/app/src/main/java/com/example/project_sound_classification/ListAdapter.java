@@ -22,7 +22,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ItemViewHolder
     }
     ItemViewHolder holdview;
     List<ItemViewHolder> list = new ArrayList<>();
-    String soundname[] = new String[7];
+    String soundname[] = new String[6];
 
     @NonNull
     @Override
@@ -82,7 +82,6 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ItemViewHolder
         }
         //Adapter에 데이터 이동알림
         notifyItemMoved(from_position, to_position);
-        HomeScreen.singleton.dataBase.setDatabase(soundname);
         return true;
     }
     @Override

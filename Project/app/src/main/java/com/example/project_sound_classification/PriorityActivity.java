@@ -49,7 +49,7 @@ public class PriorityActivity extends AppCompatActivity {
         LinearLayoutManager manager = new LinearLayoutManager(this);
         manager.setOrientation(LinearLayoutManager.VERTICAL);
         rv.setLayoutManager(manager);
-        soundname = HomeScreen.singleton.dataBase.currentSoundDatabase();
+        soundname = HomeScreen.singleton.getSoundlist();
         Arrays.sort(soundname);
         for (int i = 0;i<6;i++){
             adapter.addItem(soundname[i]);

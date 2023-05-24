@@ -1,5 +1,6 @@
 package com.example.project_sound_classification;
 
+import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -38,19 +39,19 @@ public class ModelAndBackEnd extends AppCompatActivity {
         audioRecoding = new AudioRecoding();
         dataPreprocessing = new DataPreprocessing();
     }
-    private void startRecoding(){
+    public void startRecoding(String path){
         audioRecoding = new AudioRecoding();
         String s = "recoding" + Integer.toString(count);
-        audioRecoding.startRecording(getExternalFilesDir(null).getAbsolutePath(), s, this);
+        audioRecoding.startRecording(path, s, this);
         count++;
     }
 
-    private boolean stopRecoding() throws JSONException, IOException, WavFileException {
+    public String stopRecoding() throws JSONException, IOException, WavFileException {
         audioRecoding.stopRecode();
         String audiopath = audioRecoding.getOutputpath();
         return uploadAudioFile(audiopath);
     }
-    private boolean uploadAudioFile(String audioFilePath) throws JSONException, IOException, WavFileException {
+    private String uploadAudioFile(String audioFilePath) throws JSONException, IOException, WavFileException {
         boolean create;
         try {
             create = data_preprocessing_and_pridiction(audioFilePath);
@@ -60,12 +61,12 @@ public class ModelAndBackEnd extends AppCompatActivity {
             throw new RuntimeException(e);
         }
         if(create) {
-            return true;
+            return audioFilePath;
         }
         else{
             File audioFile = new File(audioFilePath);
             audioFile.delete();
-            return false;
+            return null;
         }
     }
     private boolean data_preprocessing_and_pridiction(String wav_path) throws IOException, WavFileException {
