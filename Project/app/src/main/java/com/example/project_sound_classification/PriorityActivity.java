@@ -16,15 +16,15 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.Map;
 
 public class PriorityActivity extends AppCompatActivity {
     static RecyclerView rv;
     ItemTouchHelper helper;
     ListAdapter adapter = new ListAdapter();
-    String soundname[] = new String[7];
+    Soundlist soundname[] = new Soundlist[6];
     int color[] = {Color.DKGRAY, Color.rgb(0,0,0), Color.CYAN, Color.MAGENTA, Color.RED, Color.YELLOW, Color.WHITE};
-    static Json priorityjson;
 
     static public void reset(){
         rv.setAdapter(HomeScreen.singleton.adapter);
@@ -42,29 +42,17 @@ public class PriorityActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("우선순위 설정"); // 제목 변경
 
         adapter = new ListAdapter();
-        if (priorityjson == null) {
-            try {
-                priorityjson = new Json(this);
-                HomeScreen.singleton.setPriorityjson(priorityjson);
-                Log.v("생성", "생성");
-            } catch (JSONException | IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+
         setContentView(R.layout.sound_list);
         rv = findViewById(R.id.rv);
         //RecyclerView의 레이아웃 방식을 지정
         LinearLayoutManager manager = new LinearLayoutManager(this);
         manager.setOrientation(LinearLayoutManager.VERTICAL);
         rv.setLayoutManager(manager);
-
-        try {
-            soundname = HomeScreen.singleton.priorityjson.getPriority();
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
-        for (int i = 0;i<7;i++){
-            adapter.addItem(new Soundlist(HomeScreen.singleton.map.get(soundname[i]), soundname[i],i + 1, color[i]));
+        soundname = HomeScreen.singleton.getSoundlist();
+        Arrays.sort(soundname);
+        for (int i = 0;i<6;i++){
+            adapter.addItem(soundname[i]);
         }
         HomeScreen.singleton.setItemTouchHelperCallback(adapter);
 

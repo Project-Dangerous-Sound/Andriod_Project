@@ -1,24 +1,16 @@
 package com.example.project_sound_classification;
 
-public class Soundlist {
-    int image;
+public class Soundlist implements Comparable<Soundlist>{
     String name;
     int priority;
     int color;
 
-    public Soundlist(int image, String name, int priority, int color){
-        this.image = image;
+    public Soundlist(int color, String name, int priority){
         this.name = name;
         this.priority = priority;
         this.color = color;
     }
 
-    public int getImage() {
-        return image;
-    }
-    public void setImage(int image) {
-        this.image = image;
-    }
 
     public String getName() {
         return name;
@@ -36,4 +28,9 @@ public class Soundlist {
 
     public int getColor(){return color;}
     public void setColor(int color) { this.color = color; }
+
+    @Override
+    public int compareTo(Soundlist soundlist) {
+        return this.priority - soundlist.priority;
+    }
 }

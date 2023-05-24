@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <uses-permission android:name = "android.permission.VIBRATE"/>
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
-    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <application
         android:allowBackup="true"
@@ -18,9 +20,13 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:usesCleartextTraffic="true"
         android:theme="@style/Theme.Project_Sound_Classification"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <service
+            android:name=".MyService"
+            android:enabled="true"
+            android:exported="true"></service>
 
         <meta-data
             android:name="android.support.PARENT_ACTIVITY"
@@ -30,85 +36,62 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Project_Sound_Classification">
-        </activity>
-
-        <!-- 메인 메뉴(알림우선순위, 로그, 설정, 이용안내 -->>
+            android:theme="@style/Theme.Project_Sound_Classification"></activity> <!-- 메인 메뉴(알림우선순위, 로그, 설정, 이용안내 -->
         <activity
             android:name=".PriorityActivity"
             android:exported="false"
             android:label="activity_priority"
-            android:parentActivityName=".MainActivity">
-        </activity>
-
+            android:parentActivityName=".MainActivity"></activity>
         <activity
             android:name=".LogActivity"
             android:exported="false"
             android:label="activity_log"
-            android:parentActivityName=".MainActivity">
-        </activity>
-
+            android:parentActivityName=".MainActivity"></activity>
         <activity
             android:name=".SettingActivity"
             android:exported="false"
             android:label="activity_setting"
-            android:parentActivityName=".MainActivity">
-        </activity>
-
+            android:parentActivityName=".MainActivity"></activity>
         <activity
             android:name=".ServiceInfoActivity"
             android:exported="false"
             android:label="activity_serviceinfo"
-            android:parentActivityName=".MainActivity">
-        </activity>
-
-        <!-- 서브(알림우선순위 → 개발자정보 -->>
+            android:parentActivityName=".MainActivity"></activity> <!-- 서브(알림우선순위 → 개발자정보 -->
         <activity
             android:name=".ServiceInfoActivity_DeveloperInfo"
             android:exported="false"
             android:label="개발자 정보"
-            android:parentActivityName=".MainActivity">
-        </activity>
-
+            android:parentActivityName=".MainActivity"></activity>
         <activity
             android:name=".ServiceInfoActivity_HowToUse"
             android:exported="false"
             android:label="사용하는 방법"
-            android:parentActivityName=".MainActivity">
-        </activity>
-
+            android:parentActivityName=".MainActivity"></activity>
         <activity
             android:name=".ServiceInfoActivity_VersionOrUpdate"
             android:exported="false"
             android:label="버전 및 업데이트 정보"
-            android:parentActivityName=".MainActivity">
-        </activity>
-
+            android:parentActivityName=".MainActivity"></activity>
         <activity
             android:name=".ServiceInfoActivity_CustomerServiceCenter"
             android:exported="false"
             android:label="고객센터 안내"
-            android:parentActivityName=".MainActivity">
-        </activity>
-
+            android:parentActivityName=".MainActivity"></activity>
         <activity
             android:name=".ServiceInfoActivity_Suggestion"
             android:exported="false"
             android:label="건의사항 관련 정보 안내"
-            android:parentActivityName=".MainActivity">
-        </activity>
-
+            android:parentActivityName=".MainActivity"></activity>
         <activity
             android:name=".SplashScreenActivity"
-            android:theme="@style/Theme.Project_Sound_Classification"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.Project_Sound_Classification">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
     </application>
 
-    </manifest>
+</manifest>
