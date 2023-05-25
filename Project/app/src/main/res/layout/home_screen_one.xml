@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    tools:context="com.example.project_sound_classification.HomeScreen_one">
+    tools:context="com.example.project_sound_classification.HomeScreen">
     <LinearLayout
         android:id="@+id/background"
         android:layout_width="match_parent"
@@ -29,38 +29,15 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:textSize="25sp"
-            android:text="소리 듣는 중"/>
+            android:text="화면을 한번 눌러주세요!"/>
 
     </LinearLayout>
 
+    <ImageButton
+        android:id="@+id/start_btn"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/transparency"/>
 
-    <Button
-        android:id="@+id/button_one"
-        android:layout_width="93dp"
-        android:layout_height="47dp"
-        android:layout_marginStart="158dp"
-        android:layout_marginEnd="164dp"
-        android:layout_marginBottom="14dp"
-        android:text="녹음시작"
-        app:layout_constraintBottom_toTopOf="@+id/button_two"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="MissingConstraints" />
-
-    <Button
-        android:id="@+id/button_two"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="158dp"
-        android:layout_marginTop="14dp"
-        android:layout_marginEnd="164dp"
-        android:layout_marginBottom="297dp"
-        android:text="녹음종료"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button_one"
-        tools:ignore="MissingConstraints" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
