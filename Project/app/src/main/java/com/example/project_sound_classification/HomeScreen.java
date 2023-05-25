@@ -19,8 +19,8 @@ import java.io.IOException;
 
 public class HomeScreen extends Fragment {
 
-    private HomeScreenBinding binding;
-    private HomeScreenOneBinding binding2;
+    private HomeScreenOneBinding binding;
+    private HomeScreenBinding binding2;
     static Singleton singleton;
     static Json priorityjson;
     @Override
@@ -29,8 +29,8 @@ public class HomeScreen extends Fragment {
             Bundle savedInstanceState
     ) {
 
-        binding = HomeScreenBinding.inflate(inflater, container, false);
-        binding2 = HomeScreenOneBinding.inflate(inflater, container, false);
+        binding = HomeScreenOneBinding.inflate(inflater, container, false);
+        //binding2 = HomeScreenBinding.inflate(inflater, container, false);
         if (singleton == null) singleton = new Singleton();
         return binding.getRoot();
 

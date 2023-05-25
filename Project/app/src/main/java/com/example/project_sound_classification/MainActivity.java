@@ -17,6 +17,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.LinearLayout;
@@ -57,6 +59,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
 import java.nio.MappedByteBuffer;
+
+import android.view.GestureDetector;
+
 public class MainActivity extends AppCompatActivity {
     static class Mapping implements Comparable<Mapping>{
         float value;
@@ -99,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private Vibrator vibrator;
-    private TextView sound1, sound2;
+    private TextView sound1, sound2, soundone;
     private MFCC mfcc;
     private ImageView background1, background2, background_one;
 
@@ -118,6 +123,9 @@ public class MainActivity extends AppCompatActivity {
     private int mNumFrames;
     private int mSampleRate;
     private int mChannels;
+    private long delay = 500;
+    private boolean already = false;
+
     private void mapping(){
         map.put(0, "차경적");
         map.put(1,"개짓는소리");
@@ -189,8 +197,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         Collections.sort(list);
-        if (list.size() > 1) Action(list.get(0).index, list.get(1).index);
-        else Action(list.get(0).index, -1);
+        /*if (list.size() > 1) Action(list.get(0).index, list.get(1).index);
+        else */Action(list.get(0).index, -1);
     }
 
     private void Action(int index, int index2){
@@ -212,63 +220,67 @@ public class MainActivity extends AppCompatActivity {
             sound1.setText(map.get(index));
             sound2.setText(map.get(index2));
             //====================================//
-            Button recodeingstartbutton = (Button) findViewById(R.id.button);
-            Button recodeingstopbutton = (Button) findViewById(R.id.button2);
+            ImageButton imgBtn = (ImageButton) findViewById(R.id.start_btn_two);
+            //Threads threads = new Threads();
+            imgBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    //시작이벤트 작성
+                    Log.v("한번 클릭", "시작");
+                    already = !already; //already 현재 작동중인지  확인하기 위한 변수
+                }
+            });
 
-            Threads threads = new Threads();
-            recodeingstartbutton.setOnClickListener(new View.OnClickListener() {
+            imgBtn.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
-                public void onClick(View view) {
-                    startRecoding();
-                }
-            });
-            recodeingstopbutton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    try {
-                        stopRecoding();
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    } catch (WavFileException e) {
-                        throw new RuntimeException(e);
+                public boolean onLongClick(View view) {
+                    if (already){  //작동중일때만 종료 가능
+                        //여기에 종료 이벤트 작성
+                        Log.v("길게누르면", "종료");
+                        already = !already;
                     }
+                    return true;
                 }
             });
+            Threads threads = new Threads();
+
         }
         //하나의 소리만 통과
         else {
             setContentView(R.layout.home_screen_one);
             background_one = findViewById(R.id.background_one);
+            soundone = findViewById(R.id.soundone);
             if (background_one != null) {
                 background_one.setBackgroundColor(color[index]);
                 background_one.setImageResource(imageSrc[index]);
             } else {
                 Log.v("MyActivity", "ImageView is null");
             }
-            Button recodeingstartbutton1 = (Button) findViewById(R.id.button_one);
-            Button recodeingstopbutton1 = (Button) findViewById(R.id.button_two);
-
-            Threads threads = new Threads();
-            recodeingstartbutton1.setOnClickListener(new View.OnClickListener() {
+            if (soundone != null) {
+                soundone.setText(map.get(index));
+            }
+            ImageButton imgBtn = (ImageButton) findViewById(R.id.start_btn);
+            //Threads threads = new Threads();
+            imgBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    startRecoding();
+                    //시작이벤트 작성
+                    Log.v("한번 클릭", "시작");
+                    soundone.setText("소리 듣는 중...");
+                    already = !already; //already 현재 작동중인지  확인하기 위한 변수
                 }
             });
-            recodeingstopbutton1.setOnClickListener(new View.OnClickListener() {
+
+            imgBtn.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
-                public void onClick(View view) {
-                    try {
-                        stopRecoding();
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    } catch (WavFileException e) {
-                        throw new RuntimeException(e);
+                public boolean onLongClick(View view) {
+                    if (already){  //작동중일때만 종료 가능
+                        //여기에 종료 이벤트 작성
+                        Log.v("길게누르면", "종료");
+                        soundone.setText("화면을 길게 눌러주세요!");
+                        already = !already;
                     }
+                    return true;
                 }
             });
 
@@ -364,14 +376,11 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
         dataPreprocessing = new DataPreprocessing();
 
-        background1 = findViewById(R.id.background1);
-        background2 = findViewById(R.id.background2);
-
-        sound1 = findViewById(R.id.sound1);
-        sound2 = findViewById(R.id.sound2);
-
+        background_one = findViewById(R.id.background_one);
+        soundone = findViewById(R.id.soundone);
 
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
@@ -404,11 +413,37 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        Button recodeingstartbutton = (Button) findViewById(R.id.button);
-        Button recodeingstopbutton = (Button) findViewById(R.id.button2);
+        ImageButton imgBtn = (ImageButton) findViewById(R.id.start_btn);
+        imgBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //시작이벤트 작성
+                Log.v("한번 클릭", "시작");
+                soundone.setText("소리 듣는 중...");
+                already = !already; //already 현재 작동중인지  확인하기 위한 변수
+            }
+        });
+        Log.v("already",Boolean.toString(already));
+        imgBtn.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                if (already){  //작동중일때만 종료 가능
+                    //여기에 종료 이벤트 작성
+                    Log.v("길게누르면", "종료");
+                    soundone.setText("화면을 길게 눌러주세요!");
+                    already = !already;
+                }
+                return true;
+            }
+        });
+
+        /*Button recodeingstartbutton = (Button) findViewById(R.id.button_one);
+        Button recodeingstopbutton = (Button) findViewById(R.id.button_two);*/
 
         Threads threads = new Threads();
-        recodeingstartbutton.setOnClickListener(new View.OnClickListener() {
+
+
+        /*recodeingstartbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startRecoding();
@@ -428,7 +463,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
+*/
         // getSupportActionBar().setDisplayShowTitleEnabled(false); 툴바 글자 안보이게 만들어주는 코드
 
         getSupportActionBar().setTitle("위험한 소리 알리미"); // 제목 변경
@@ -485,8 +520,10 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+
         if (vibrator == null) {
             vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+            Log.v("진동:","??????");
         }
         if (vibrator.hasVibrator() && ((Switch)findViewById(R.id.app_bar_switch)).isChecked()) {
             vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE));
