@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:textSize="25sp"
-            android:text="화면을 길게 눌러주세요!"/>
+            android:text="화면을 한번 눌러주세요!"/>
 
     </LinearLayout>
 

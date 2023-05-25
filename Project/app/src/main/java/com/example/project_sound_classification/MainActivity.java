@@ -22,6 +22,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.LinearLayout;
@@ -133,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
     private static int count;
     private static boolean forground = false;
     private Vibrator vibrator;
-    private TextView sound1, sound2;
+    private TextView sound1, sound2, soundone;
     private ImageView background1, background2, background_one;
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
@@ -152,6 +153,8 @@ public class MainActivity extends AppCompatActivity {
     private Threads threads;
     private ActionThread actionThread;
     private boolean is_running;
+    private boolean already = false;
+
     private int mNumFrames;
     private int mSampleRate;
     private int mChannels;
@@ -246,11 +249,17 @@ public class MainActivity extends AppCompatActivity {
         else {
             setContentView(R.layout.home_screen_one);
             background_one = findViewById(R.id.background_one);
+            soundone = findViewById(R.id.soundone);
             if (background_one != null) {
                 background_one.setBackgroundColor(color[index]);
                 background_one.setImageResource(imageSrc[index]);
             } else {
                 Log.v("MyActivity", "ImageView is null");
+            }
+            if (soundone != null){
+                soundone.setText(map.get(index));
+            } else {
+                Log.v("MyActivity", "TextView is null");
             }
         }
 
@@ -373,14 +382,10 @@ public class MainActivity extends AppCompatActivity {
 
 
         forground = false;
-        //textView = findViewById(R.id.textview_first);
-        //bacground = findViewById(R.id.background);
-        background1 = findViewById(R.id.background1);
-        background2 = findViewById(R.id.background2);
+
         background_one = findViewById(R.id.background_one);
 
-        sound1 = findViewById(R.id.sound1);
-        sound2 = findViewById(R.id.sound2);
+        soundone = findViewById(R.id.soundone);
 
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
@@ -413,11 +418,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        Button recodeingstartbutton = (Button) findViewById(R.id.button_one);
-        Button recodeingstopbutton = (Button) findViewById(R.id.button_two);
+       /* Button recodeingstartbutton = (Button) findViewById(R.id.button_one);
+        Button recodeingstopbutton = (Button) findViewById(R.id.button_two);*/
         threads = new Threads();
         actionThread = new ActionThread();
-        recodeingstartbutton.setOnClickListener(new View.OnClickListener() {
+        /*recodeingstartbutton.setOnClickListener(new View.OnClickListener() {  //아래 코드로 변경 요청
             @Override
             public void onClick(View view) {
                 Start_Message();
@@ -428,7 +433,41 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 End_Message();
             }
+        });*/
+
+        //코드변경
+        ImageButton imgBtn = (ImageButton) findViewById(R.id.start_btn);
+        imgBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (!already){
+                    Log.v("한번 클릭", "시작");
+                    //$$$$$$$$$$$$$$$$$$시작이벤트 작성$$$$$$$$$$$$$$$$$$$$$$
+                    Start_Message();
+                }
+            }
         });
+
+        imgBtn.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                if (already){  //작동중일때만 종료 가능
+                    Log.v("길게누르면", "종료");
+
+                    soundone.setText("화면을 한번 눌러주세요!");
+                    already = !already;
+
+                    //여기에 종료 이벤트 작성
+                    //End_Message();
+                }
+                return true;
+            }
+        });
+
+
+
+
         // getSupportActionBar().setDisplayShowTitleEnabled(false); 툴바 글자 안보이게 만들어주는 코드
 
         getSupportActionBar().setTitle("위험한 소리 알리미"); // 제목 변경
@@ -450,6 +489,8 @@ public class MainActivity extends AppCompatActivity {
                 .setPositiveButton("예", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // 종료 버튼을 눌렀을 때 앱을 종료합니다.
+                        soundone.setText("소리 듣는 중...");
+                        already = !already; //already 현재 작동중인지  확인하기 위한 변수
                         threads.start();
                     }
                 })
