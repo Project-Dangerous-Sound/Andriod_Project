@@ -19,6 +19,7 @@ import java.io.IOException;
 
 public class HomeScreen extends Fragment {
 
+
     private HomeScreenOneBinding binding;
     private HomeScreenBinding binding2;
     static Singleton singleton;
@@ -30,7 +31,7 @@ public class HomeScreen extends Fragment {
     ) {
 
         binding = HomeScreenOneBinding.inflate(inflater, container, false);
-        //binding2 = HomeScreenBinding.inflate(inflater, container, false);
+        binding2 = HomeScreenBinding.inflate(inflater, container, false);
         if (singleton == null) singleton = new Singleton();
         return binding.getRoot();
 

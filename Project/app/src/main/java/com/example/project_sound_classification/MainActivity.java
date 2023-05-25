@@ -1,6 +1,10 @@
 package com.example.project_sound_classification;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,6 +14,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.Log;
@@ -17,17 +22,18 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -55,12 +61,16 @@ import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
 import java.nio.MappedByteBuffer;
-
-import android.view.GestureDetector;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
     static class Mapping implements Comparable<Mapping>{
@@ -78,17 +88,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class Threads extends Thread{
+    public class Threads extends Thread{
         public Threads(){
 
         }
-
         public void run(){
 
             while (true){
                 try{
                     startRecoding();
-                    Thread.sleep(1000);
+                    Threads.sleep(1000);
                     stopRecoding();
                 }
                 catch(InterruptedException e){
@@ -103,16 +112,36 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-    private Vibrator vibrator;
-    private TextView sound1, sound2, soundone;
-    private MFCC mfcc;
-    private ImageView background1, background2, background_one;
+    private class ActionThread extends Thread{
+        String audiopath;
+        boolean isaction_check = false;
+        public ActionThread(){
 
+        }
+        public void run(){
+            File audioFile = new File(audiopath);
+            ServerRequst(audioFile);
+            is_running = true;
+        }
+        public void setAudiopath(String audiopath){
+            this.audiopath = audiopath;
+        }
+        public void setIsaction_check(boolean isaction_check){
+            this.isaction_check = isaction_check;
+        }
+    }
+    private static int count;
+    private static boolean forground = false;
+    private Vibrator vibrator;
+    private TextView sound1, sound2;
+    private ImageView background1, background2, background_one;
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
     private AudioRecoding audioRecoding;
     private Map<Integer, String> map;
     private  DataPreprocessing dataPreprocessing;
+    private static String CHANNEL_ID = "channel1";
+    private static String CHANEL_NAME = "Channel1";
     private float standfloat = 0.4f;
     private float priority_weight[] = {1.0f, 0.8f, 0.6f, 0.4f, 0.2f, 0f};
     private int color[] = {Color.DKGRAY, Color.rgb(0,0,0), Color.CYAN, Color.MAGENTA, Color.RED, Color.YELLOW};
@@ -120,12 +149,12 @@ public class MainActivity extends AppCompatActivity {
             R.drawable.image4, R.drawable.image5, R.drawable.image6,
             R.drawable.image7, R.drawable.wave}; //이미지를 변경하기 위해서 이미지 소스를 배열로 저장
 
+    private Threads threads;
+    private ActionThread actionThread;
+    private boolean is_running;
     private int mNumFrames;
     private int mSampleRate;
     private int mChannels;
-    private long delay = 500;
-    private boolean already = false;
-
     private void mapping(){
         map.put(0, "차경적");
         map.put(1,"개짓는소리");
@@ -135,17 +164,9 @@ public class MainActivity extends AppCompatActivity {
         map.put(5, "비상경보");
     }
     private boolean data_preprocessing_and_pridiction(String wav_path) throws IOException, WavFileException {
-        long start = System.currentTimeMillis();
         double spectrum[] = dataPreprocessing.spectrumprocesing(wav_path);
         float meanMFCCValues[][] = dataPreprocessing.mfccprocesing(spectrum);
-        long end = System.currentTimeMillis();
-        Log.v("데이터 전처리 시간 측정", Long.toString((end - start) / 1000));
-        start = System.currentTimeMillis();
         boolean isCheck = loadModdelANDprediction(meanMFCCValues);
-        end = System.currentTimeMillis();
-        if (isCheck) Log.v("소리확인", "처리음");
-        else Log.v("소리확인", "비처리음");
-        Log.v("모델 실행시간 측정", Long.toString((end - start) / 1000));
         return isCheck;
     }
     private boolean loadModdelANDprediction(float [][] meanMFCC) throws IOException {
@@ -153,14 +174,12 @@ public class MainActivity extends AppCompatActivity {
         Interpreter tflite;
 
         Interpreter.Options tfliteOption = new Interpreter.Options();
-        tfliteOption.setNumThreads(2);
+        tfliteOption.setNumThreads(1);
         tflite = new Interpreter(tflitemodel, tfliteOption);
 
         int imageTensorIndex = 0;
         int [] imgeShape = tflite.getInputTensor(imageTensorIndex).shape();
         DataType imgeDataType = tflite.getInputTensor(imageTensorIndex).dataType();
-        Log.v("확인", Integer.toString(imgeShape[0]) + " " + Integer.toString(imgeShape[1]) + " " + Integer.toString(imgeShape[2]) + " " + Integer.toString(imgeShape[3]));
-        Log.v("확인", Integer.toString(meanMFCC.length) + " " + Integer.toString(meanMFCC[0].length));
         int probabilityTensorIndex = 0;
         int probabilityShape[] = tflite.getOutputTensor(probabilityTensorIndex).shape();
         DataType probabilityDataType = tflite.getOutputTensor(probabilityTensorIndex).dataType();
@@ -175,34 +194,41 @@ public class MainActivity extends AppCompatActivity {
         TensorBuffer outputTensorBuffer = TensorBuffer.createFixedSize(probabilityShape,probabilityDataType);
         tflite.run(inputBuffer1, outputTensorBuffer.getBuffer());
         float[] result = outputTensorBuffer.getFloatArray();
-        float nonsound = Math.abs(1.0f - result[0]);
-        float checksound = Math.abs(1.0f - result[1]);
-        Log.v("모델결과 확인", Float.toString(result[0]) + " " + Float.toString(result[1]));
-        return checksound < nonsound;
+        float nonsound =  result[0];
+        float checksound = result[1];
+        String non = String.format("%.2f", nonsound);
+        String check = String.format("%.2f", checksound);
+        String s = non + " " + check;
+        MainActivity.this.runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
+            }
+        });
+        //Log.v("확인", Float.toString(sum) + " " + Float.toString(nonsound) + " " + Float.toString(checksound));
+        return checksound - nonsound >= 0.2f;
     }
     private void Weight_calc(float[] softmax) throws JSONException {
         List<Mapping> list = new ArrayList<>();
         for (int i = 0;i<softmax.length;i++)
             if (softmax[i] >= standfloat) {
                 list.add(new Mapping(softmax[i], i));
-                Log.v("통과", Integer.toString(i) + " " + Float.toString(softmax[i]) + map.get(i));
             }
-        String priorityName[] = HomeScreen.singleton.priorityjson.getPriority();
-
+        Soundlist soundlist[] = HomeScreen.singleton.getSoundlist();
+        Arrays.sort(soundlist);
         for(int i = 0;i<6;i++){
             for (Mapping mapping: list){
-                if (map.get(mapping.index).equals(priorityName[i])){
+                if (map.get(mapping.index).equals(soundlist[i].name)){
                     mapping.value += priority_weight[i];
                 }
             }
         }
         Collections.sort(list);
-        /*if (list.size() > 1) Action(list.get(0).index, list.get(1).index);
-        else */Action(list.get(0).index, -1);
+
+        if (list.size() > 1) Action(list.get(0).index, list.get(1).index);
+        else if (list.size() == 1)Action(list.get(0).index, -1);
     }
 
     private void Action(int index, int index2){
-        //2개의 소리 통과
         if (index2 != -1) {
             setContentView(R.layout.home_screen);
             background1 = findViewById(R.id.background1);
@@ -214,90 +240,66 @@ public class MainActivity extends AppCompatActivity {
             background1.setBackgroundColor(color[index]);
             background2.setBackgroundColor(color[index2]);
 
-            background1.setImageResource(imageSrc[index]);
-            background2.setImageResource(imageSrc[index2]);
-
             sound1.setText(map.get(index));
             sound2.setText(map.get(index2));
-            //====================================//
-            ImageButton imgBtn = (ImageButton) findViewById(R.id.start_btn_two);
-            //Threads threads = new Threads();
-            imgBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    //시작이벤트 작성
-                    Log.v("한번 클릭", "시작");
-                    already = !already; //already 현재 작동중인지  확인하기 위한 변수
-                }
-            });
-
-            imgBtn.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View view) {
-                    if (already){  //작동중일때만 종료 가능
-                        //여기에 종료 이벤트 작성
-                        Log.v("길게누르면", "종료");
-                        already = !already;
-                    }
-                    return true;
-                }
-            });
-            Threads threads = new Threads();
-
         }
-        //하나의 소리만 통과
         else {
             setContentView(R.layout.home_screen_one);
             background_one = findViewById(R.id.background_one);
-            soundone = findViewById(R.id.soundone);
             if (background_one != null) {
                 background_one.setBackgroundColor(color[index]);
                 background_one.setImageResource(imageSrc[index]);
             } else {
                 Log.v("MyActivity", "ImageView is null");
             }
-            if (soundone != null) {
-                soundone.setText(map.get(index));
-            }
-            ImageButton imgBtn = (ImageButton) findViewById(R.id.start_btn);
-            //Threads threads = new Threads();
-            imgBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    //시작이벤트 작성
-                    Log.v("한번 클릭", "시작");
-                    soundone.setText("소리 듣는 중...");
-                    already = !already; //already 현재 작동중인지  확인하기 위한 변수
-                }
-            });
-
-            imgBtn.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View view) {
-                    if (already){  //작동중일때만 종료 가능
-                        //여기에 종료 이벤트 작성
-                        Log.v("길게누르면", "종료");
-                        soundone.setText("화면을 길게 눌러주세요!");
-                        already = !already;
-                    }
-                    return true;
-                }
-            });
-
-            Log.v("소리","1개 통과");
         }
-        //둘다 통과하지 못했을때
-        Log.v("위험한 소리: ", map.get(index));
+
+
         Vibrator vibrator1 = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         vibrator1.vibrate(VibrationEffect.createOneShot(1000, 50));
+        is_running = false;
+    }
+    private void showAleam(String s){
+        NotificationManager manager;
+        NotificationCompat.Builder builder;
+        manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        //버전 오레오 이상일 경우
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            manager.createNotificationChannel(
+                    new NotificationChannel(CHANNEL_ID, CHANEL_NAME, NotificationManager.IMPORTANCE_DEFAULT)
+            );
+
+            builder = new NotificationCompat.Builder(this,CHANNEL_ID);
+
+            //하위 버전일 경우
+        }else{
+            builder = new NotificationCompat.Builder(this);
+        }
+
+        //알림창 제목
+        builder.setContentTitle("알림");
+
+        //알림창 메시지
+        builder.setContentText(s);
+
+
+        Notification notification = builder.build();
+
+        //알림창 실행
+        manager.notify(1,notification);
     }
     private void ServerRequst(File audioFile){
-        Log.v("BackEnd", "서버로 .wav파일 보냄");
         RequestBody requestBody = RequestBody.create(MediaType.parse("audio/wav"), audioFile);
         MultipartBody.Part audioPart = MultipartBody.Part.createFormData("audio", audioFile.getName(), requestBody);
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .connectTimeout(90, TimeUnit.SECONDS)
+                .readTimeout(90, TimeUnit.SECONDS)
+                .writeTimeout(90, TimeUnit.SECONDS)
+                .build();
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://15.164.76.29:5000")
                 .addConverterFactory(GsonConverterFactory.create())
+                .client(okHttpClient)
                 .build();
 
         MyApi myApi = retrofit.create(MyApi.class);
@@ -307,36 +309,38 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
                 ApiResponse result = response.body();
-
-                /*float softmax[] = new float[6];
-                for (int i = 0;i<6;i++) softmax[i] = (float)Math.random();
+                Log.v("서버로 부터 받음", "서버로 받음");
+                audioFile.delete();
+                String softemax_string = result.getMessage();
+                String softmax_arr[] = softemax_string.split(" ");
+                float softmax[] = new float[6];
+                for (int i = 0;i<6;i++){
+                    softmax[i] = Float.parseFloat(softmax_arr[i]);
+                }
                 try {
                     Weight_calc(softmax);
                 } catch (JSONException e) {
                     throw new RuntimeException(e);
-                }*/
-                Log.v("성공메세지", Integer.toString(result.getMessage().length));
-                Log.v("확인", "서버에서 받음");
+                }
             }
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Log.v("실패메세지", t.getMessage());
+                is_running = false;
             }
         });
     }
 
     private void startRecoding(){
-        Log.v("녹음", "녹음 시작");
         audioRecoding = new AudioRecoding();
-        audioRecoding.startRecording(getExternalFilesDir(null).getAbsolutePath(), "recoding", this);
+        String s = "recoding" + Integer.toString(count);
+        audioRecoding.startRecording(getExternalFilesDir(null).getAbsolutePath(), s, this);
+        count++;
     }
 
     private void stopRecoding() throws JSONException, IOException, WavFileException {
         audioRecoding.stopRecode();
-        String audiopath = audioRecoding.getBrekSound();
-        Log.v("녹음", "녹음 중지");
-        Log.v("파일 위치", audiopath);
+        String audiopath = audioRecoding.getOutputpath();
         uploadAudioFile(audiopath);
     }
     private void uploadAudioFile(String audioFilePath) throws JSONException, IOException, WavFileException {
@@ -349,15 +353,12 @@ public class MainActivity extends AppCompatActivity {
             throw new RuntimeException(e);
         }
         if(create) {
+            actionThread.setAudiopath(audioFilePath);
+            if (!is_running)  actionThread.run();
+        }
+        else{
             File audioFile = new File(audioFilePath);
-            float softmax[] = new float[6];
-            for (int i = 0;i<6;i++) softmax[i] = (float)Math.random();
-            try {
-                Weight_calc(softmax);
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            }
-            ServerRequst(audioFile);
+            audioFile.delete();
         }
     }
 
@@ -368,19 +369,18 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        try {
-            if(HomeScreen.singleton.priorityjson == null)
-                HomeScreen.singleton.setPriorityjson(new Json(this));
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
         dataPreprocessing = new DataPreprocessing();
 
+
+        forground = false;
+        //textView = findViewById(R.id.textview_first);
+        //bacground = findViewById(R.id.background);
+        background1 = findViewById(R.id.background1);
+        background2 = findViewById(R.id.background2);
         background_one = findViewById(R.id.background_one);
-        soundone = findViewById(R.id.soundone);
+
+        sound1 = findViewById(R.id.sound1);
+        sound2 = findViewById(R.id.sound2);
 
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
@@ -413,57 +413,22 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        ImageButton imgBtn = (ImageButton) findViewById(R.id.start_btn);
-        imgBtn.setOnClickListener(new View.OnClickListener() {
+        Button recodeingstartbutton = (Button) findViewById(R.id.button_one);
+        Button recodeingstopbutton = (Button) findViewById(R.id.button_two);
+        threads = new Threads();
+        actionThread = new ActionThread();
+        recodeingstartbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //시작이벤트 작성
-                Log.v("한번 클릭", "시작");
-                soundone.setText("소리 듣는 중...");
-                already = !already; //already 현재 작동중인지  확인하기 위한 변수
-            }
-        });
-        Log.v("already",Boolean.toString(already));
-        imgBtn.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                if (already){  //작동중일때만 종료 가능
-                    //여기에 종료 이벤트 작성
-                    Log.v("길게누르면", "종료");
-                    soundone.setText("화면을 길게 눌러주세요!");
-                    already = !already;
-                }
-                return true;
-            }
-        });
-
-        /*Button recodeingstartbutton = (Button) findViewById(R.id.button_one);
-        Button recodeingstopbutton = (Button) findViewById(R.id.button_two);*/
-
-        Threads threads = new Threads();
-
-
-        /*recodeingstartbutton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startRecoding();
+                Start_Message();
             }
         });
         recodeingstopbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try {
-                    stopRecoding();
-                } catch (JSONException e) {
-                    throw new RuntimeException(e);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                } catch (WavFileException e) {
-                    throw new RuntimeException(e);
-                }
+                End_Message();
             }
         });
-*/
         // getSupportActionBar().setDisplayShowTitleEnabled(false); 툴바 글자 안보이게 만들어주는 코드
 
         getSupportActionBar().setTitle("위험한 소리 알리미"); // 제목 변경
@@ -478,7 +443,56 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+    private void Start_Message(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("녹음을 시작하시겠습니까?")
+                .setCancelable(false)
+                .setPositiveButton("예", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // 종료 버튼을 눌렀을 때 앱을 종료합니다.
+                        threads.start();
+                    }
+                })
+                .setNegativeButton("아니오", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // 취소 버튼을 눌렀을 때 다이얼로그를 닫습니다.
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+    private void End_Message(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("녹음을 종료하시겠습니까?")
+                .setCancelable(false)
+                .setPositiveButton("예", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        threads.interrupt();
+                        actionThread.interrupt();
+                    }
+                })
+                .setNegativeButton("아니오", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+    private void Ready_Message(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("현재 준비중입니다.")
+                .setCancelable(false)
+                .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // 종료 버튼을 눌렀을 때 앱을 종료합니다.
 
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grandResults) {
         // READ_PHONE_STATE의 권한 체크 결과를 불러온다
@@ -504,31 +518,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // 이 코드는 Vibrator 개체(아직 존재하지 않는 경우)를 만들고,
-    // 스위치 버튼이 선택된 경우(즉, 상태가 "켜짐"인 경우)에만 짧은 진동(100밀리초)을 트리거합니다.
-    // 진동을 트리거해야 하는 이벤트가 발생할 때마다 vibrate() 메서드를 호출합니다.
-    // 예를 들어, 버튼을 클릭할 때 진동하도록 하려면 다음 코드를 OnClickListener에 추가할 수 있습니다.
-    private void vibrate() {
-        Button button = findViewById(R.id.app_bar_switch);
-        Button recodeingstartbutton = findViewById(R.id.button);
-        Button recodingstopbutton = findViewById(R.id.button2);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                vibrate();
-                // add more code here to handle the button click
-            }
-        });
 
-
-
-        if (vibrator == null) {
-            vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-            Log.v("진동:","??????");
-        }
-        if (vibrator.hasVibrator() && ((Switch)findViewById(R.id.app_bar_switch)).isChecked()) {
-            vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE));
-        }
-    }
     private void Recoding(){
 
     }

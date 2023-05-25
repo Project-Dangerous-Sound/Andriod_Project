@@ -22,7 +22,7 @@ import java.io.IOException;
 public class SettingActivity extends AppCompatActivity {
     static RecyclerView setting_rv;
     SettingListAdapter adapter = new SettingListAdapter(this);
-    String soundname[] = new String[7];
+    Soundlist soundname[] = new Soundlist[6];
     int color[] = {Color.DKGRAY, Color.rgb(0,0,0), Color.CYAN, Color.MAGENTA, Color.RED, Color.YELLOW, Color.WHITE};
     static Json priorityjson;
     int defaultColor;
@@ -43,29 +43,16 @@ public class SettingActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("설정"); // 제목 변경
 
         adapter = new SettingListAdapter (this);
-        if (priorityjson == null) {
-            try {
-                priorityjson = new Json(this);
-                HomeScreen.singleton.setPriorityjson(priorityjson);
-                Log.v("생성", "생성");
-            } catch (JSONException | IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+
         setContentView(R.layout.setting_rv);
         setting_rv = findViewById(R.id.setting_rv);
         //RecyclerView의 레이아웃 방식을 지정
         LinearLayoutManager manager = new LinearLayoutManager(this);
         manager.setOrientation(LinearLayoutManager.VERTICAL);
         setting_rv.setLayoutManager(manager);
-
-        try {
-            soundname = HomeScreen.singleton.priorityjson.getPriority();
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
-        for (int i = 0;i<7;i++){
-            adapter.addItem(new Soundlist(HomeScreen.singleton.map.get(soundname[i]), soundname[i],i + 1, color[i]));
+        soundname = HomeScreen.singleton.getSoundlist();
+        for (int i = 0;i<6;i++){
+            adapter.addItem(soundname[i]);
         }
         //RecyclerView의 Adapter 세팅
         setting_rv.setAdapter(adapter);
