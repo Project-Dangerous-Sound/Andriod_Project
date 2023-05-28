@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
         }
         public void run(){
 
-            while (true){
+            while (!out_thread){
                 try{
                     startRecoding();
                     Threads.sleep(1000);
@@ -153,6 +153,7 @@ public class MainActivity extends AppCompatActivity {
     private Threads threads;
     private ActionThread actionThread;
     private boolean is_running;
+    private boolean out_thread = false;
     private boolean already = false;
 
     private int mNumFrames;
@@ -459,7 +460,7 @@ public class MainActivity extends AppCompatActivity {
                     already = !already;
 
                     //여기에 종료 이벤트 작성
-                    //End_Message();
+                    End_Message();
                 }
                 return true;
             }
@@ -491,6 +492,7 @@ public class MainActivity extends AppCompatActivity {
                         // 종료 버튼을 눌렀을 때 앱을 종료합니다.
                         soundone.setText("소리 듣는 중...");
                         already = !already; //already 현재 작동중인지  확인하기 위한 변수
+                        out_thread = false;
                         threads.start();
                     }
                 })
@@ -509,8 +511,7 @@ public class MainActivity extends AppCompatActivity {
                 .setCancelable(false)
                 .setPositiveButton("예", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        threads.interrupt();
-                        actionThread.interrupt();
+                        out_thread = true;
                     }
                 })
                 .setNegativeButton("아니오", new DialogInterface.OnClickListener() {
@@ -559,12 +560,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // 이 코드는 Vibrator 개체(아직 존재하지 않는 경우)를 만들고,
-
-    private void Recoding(){
-
-    }
-
-
 
     //-----------------------------------------------------------------------------------------------------------------------------
     @Override
@@ -629,7 +624,17 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
             return true;
         }
-
+        else if (id == R.id.BackgroundStart){
+            Intent service;
+            out_thread = true;
+            service = new Intent(this, MyService.class);
+            startService(service);
+        }
+        else if (id == R.id.BackgroundEnd){
+            Intent service;
+            service = new Intent(this, MyService.class);
+            stopService(service);
+        }
         return super.onOptionsItemSelected(item);
 
     }
