@@ -25,11 +25,6 @@
         android:title="이용안내"
         app:showAsAction="never" />
     <item
-        android:id="@+id/app_bar_switch"
-        android:title="Switch"
-        app:actionLayout="@layout/switch_item"
-        app:showAsAction="always" />
-    <item
         android:id="@+id/BackgroundStart"
         android:orderInCategory="101"
         android:title="백그라운드 실행" />
