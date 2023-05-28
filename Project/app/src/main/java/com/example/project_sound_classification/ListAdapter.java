@@ -76,7 +76,6 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ItemViewHolder
         }
         int index = 0;
         for (Soundlist soundlist1 : items) {
-            Log.v("확인: ", Integer.toString(soundlist1.priority) + " " + soundlist1.name);
             soundname[index] = soundlist1.name;
             index++;
         }

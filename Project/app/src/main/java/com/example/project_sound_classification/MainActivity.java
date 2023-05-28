@@ -269,35 +269,6 @@ public class MainActivity extends AppCompatActivity {
         vibrator1.vibrate(VibrationEffect.createOneShot(1000, 50));
         is_running = false;
     }
-    private void showAleam(String s){
-        NotificationManager manager;
-        NotificationCompat.Builder builder;
-        manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        //버전 오레오 이상일 경우
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-            manager.createNotificationChannel(
-                    new NotificationChannel(CHANNEL_ID, CHANEL_NAME, NotificationManager.IMPORTANCE_DEFAULT)
-            );
-
-            builder = new NotificationCompat.Builder(this,CHANNEL_ID);
-
-            //하위 버전일 경우
-        }else{
-            builder = new NotificationCompat.Builder(this);
-        }
-
-        //알림창 제목
-        builder.setContentTitle("알림");
-
-        //알림창 메시지
-        builder.setContentText(s);
-
-
-        Notification notification = builder.build();
-
-        //알림창 실행
-        manager.notify(1,notification);
-    }
     private void ServerRequst(File audioFile){
         RequestBody requestBody = RequestBody.create(MediaType.parse("audio/wav"), audioFile);
         MultipartBody.Part audioPart = MultipartBody.Part.createFormData("audio", audioFile.getName(), requestBody);

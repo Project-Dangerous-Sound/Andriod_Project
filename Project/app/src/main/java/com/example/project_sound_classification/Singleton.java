@@ -36,12 +36,15 @@ public class Singleton {
     }
     private void BaseSoundPriority(){
         for(int i = 0;i<6;i++){
-            soundlist[i] = new Soundlist(color[i], name[i], i);
+            soundlist[i] = new Soundlist(color[i], name[i], i + 1);
         }
     }
     public Soundlist[] getSoundlist(){
         return soundlist;
     }
 
+    public void setSoundlist(Soundlist[] soundlist){
+        this.soundlist = soundlist;
+    }
 
 }
