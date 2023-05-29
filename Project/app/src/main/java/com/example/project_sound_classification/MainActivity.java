@@ -241,6 +241,9 @@ public class MainActivity extends AppCompatActivity {
             background1.setBackgroundColor(color[index]);
             background2.setBackgroundColor(color[index2]);
 
+            background1.setImageResource(imageSrc[index]);
+            background2.setImageResource(imageSrc[index2]);
+
             sound1.setText(map.get(index));
             sound2.setText(map.get(index2));
 
