@@ -235,17 +235,49 @@ public class MainActivity extends AppCompatActivity {
 
             sound1 = findViewById(R.id.sound1);
             sound2 = findViewById(R.id.sound2);
+            ImageButton imgBtn = (ImageButton) findViewById(R.id.start_btn_two);
+
             //--------------------------------------//
             background1.setBackgroundColor(color[index]);
             background2.setBackgroundColor(color[index2]);
 
             sound1.setText(map.get(index));
             sound2.setText(map.get(index2));
+
+            imgBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    if (!already){
+                        Log.v("한번 클릭", "시작");
+                        //$$$$$$$$$$$$$$$$$$시작이벤트 작성$$$$$$$$$$$$$$$$$$$$$$
+                        Start_Message();
+                    }
+                }
+            });
+
+            imgBtn.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    if (already){  //작동중일때만 종료 가능
+                        Log.v("길게누르면", "종료");
+
+                        soundone.setText("화면을 한번 눌러주세요!");
+                        already = !already;
+
+                        //여기에 종료 이벤트 작성
+                        End_Message();
+                    }
+                    return true;
+                }
+            });
         }
         else {
             setContentView(R.layout.home_screen_one);
             background_one = findViewById(R.id.background_one);
             soundone = findViewById(R.id.soundone);
+            ImageButton imgBtn = (ImageButton) findViewById(R.id.start_btn);
+
             if (background_one != null) {
                 background_one.setBackgroundColor(color[index]);
                 background_one.setImageResource(imageSrc[index]);
@@ -257,6 +289,35 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 Log.v("MyActivity", "TextView is null");
             }
+
+            imgBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    if (!already){
+                        Log.v("한번 클릭", "시작");
+                        //$$$$$$$$$$$$$$$$$$시작이벤트 작성$$$$$$$$$$$$$$$$$$$$$$
+                        Start_Message();
+                    }
+                }
+            });
+
+            imgBtn.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    if (already){  //작동중일때만 종료 가능
+                        Log.v("길게누르면", "종료");
+
+                        soundone.setText("화면을 한번 눌러주세요!");
+                        already = !already;
+
+                        //여기에 종료 이벤트 작성
+                        End_Message();
+                    }
+                    return true;
+                }
+            });
+
         }
 
 
