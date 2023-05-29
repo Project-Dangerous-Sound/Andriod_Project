@@ -331,7 +331,7 @@ public class MyService extends Service {
             while (!isCancelled()){
                 try {
                     startRecoding();
-                    Thread.sleep(1000);
+                    Thread.sleep(1800);
                     stopRecoding();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);

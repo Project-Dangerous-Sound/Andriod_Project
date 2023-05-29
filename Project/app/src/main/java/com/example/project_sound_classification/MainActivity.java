@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
             while (!out_thread){
                 try{
                     startRecoding();
-                    Threads.sleep(1000);
+                    Threads.sleep(1800);
                     stopRecoding();
                 }
                 catch(InterruptedException e){
@@ -188,10 +188,10 @@ public class MainActivity extends AppCompatActivity {
         int probabilityShape[] = tflite.getOutputTensor(probabilityTensorIndex).shape();
         DataType probabilityDataType = tflite.getOutputTensor(probabilityTensorIndex).dataType();
 
-        ByteBuffer inputBuffer1 = ByteBuffer.allocateDirect(38400).order(ByteOrder.nativeOrder());
+        ByteBuffer inputBuffer1 = ByteBuffer.allocateDirect(57600).order(ByteOrder.nativeOrder());
         // 1 * 120 * 80 * 1
         for (int j = 0; j < 120; j++) {
-            for (int k = 0; k < 80; k++) {
+            for (int k = 0; k < 120; k++) {
                 inputBuffer1.putFloat(meanMFCC[j][k]);
             }
         }
