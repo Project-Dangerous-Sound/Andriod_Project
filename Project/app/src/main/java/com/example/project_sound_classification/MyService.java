@@ -34,6 +34,7 @@ import java.nio.MappedByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -63,6 +64,20 @@ public class MyService extends Service {
     private  DataPreprocessing dataPreprocessing;
     private ActionThread actionThread;
 
+    static class Mapping implements Comparable<MainActivity.Mapping>{
+        float value;
+        int index;
+
+        public Mapping(float value, int index){
+            this.value = value;
+            this.index = index;
+        }
+
+        @Override
+        public int compareTo(MainActivity.Mapping o){
+            return Float.compare(o.value, this.value);
+        }
+    }
     private class ActionThread extends Thread{
         String audiopath;
         boolean isaction_check = false;
@@ -81,7 +96,14 @@ public class MyService extends Service {
             this.isaction_check = isaction_check;
         }
     }
-
+    private void mapping(){
+        map.put(0, "차경적");
+        map.put(1,"개짓는소리");
+        map.put(2, "사이렌");
+        map.put(3,"화재경보");
+        map.put(4, "도난경보");
+        map.put(5, "비상경보");
+    }
     private boolean data_preprocessing_and_pridiction(String wav_path) throws IOException, WavFileException {
         double spectrum[] = dataPreprocessing.spectrumprocesing(wav_path);
         float meanMFCCValues[][] = dataPreprocessing.mfccprocesing(spectrum);
@@ -109,6 +131,7 @@ public class MyService extends Service {
         else if (list.size() == 1)Action(list.get(0).index, -1);
     }
     private void Action(int index1, int index2){
+        Log.v("ada", "asdadasd");
         NotificationManager manager;
         NotificationCompat.Builder builder;
 
@@ -137,7 +160,7 @@ public class MyService extends Service {
         //알림창 메시지
         builder.setContentText(s);
 
-
+        builder.setSmallIcon(R.mipmap.ic_launcher);
         Notification notification = builder.build();
 
         //알림창 실행
@@ -219,13 +242,14 @@ public class MyService extends Service {
                 .writeTimeout(90, TimeUnit.SECONDS)
                 .build();
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://15.164.76.29:5000")
+                .baseUrl("http://52.78.138.181:8080")
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(okHttpClient)
                 .build();
 
         MyApi myApi = retrofit.create(MyApi.class);
         Call<ApiResponse> call = myApi.uploadAudio(audioPart);
+        Log.v("da","asdada");
         call.enqueue(new Callback<ApiResponse>() {
 
             @Override
@@ -253,6 +277,7 @@ public class MyService extends Service {
         });
     }
 
+
     public MyService() {
 
     }
@@ -268,6 +293,8 @@ public class MyService extends Service {
         task.execute();
         dataPreprocessing = new DataPreprocessing();
         actionThread = new ActionThread();
+        map = new HashMap<>();
+        mapping();
         initializeNotification();
         return START_NOT_STICKY;
     }

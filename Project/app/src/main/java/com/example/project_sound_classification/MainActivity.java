@@ -203,11 +203,6 @@ public class MainActivity extends AppCompatActivity {
         String non = String.format("%.2f", nonsound);
         String check = String.format("%.2f", checksound);
         String s = non + " " + check;
-        MainActivity.this.runOnUiThread(new Runnable() {
-            public void run() {
-                Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
-            }
-        });
         //Log.v("확인", Float.toString(sum) + " " + Float.toString(nonsound) + " " + Float.toString(checksound));
         return checksound - nonsound >= 0.2f;
     }
@@ -278,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
                 .writeTimeout(90, TimeUnit.SECONDS)
                 .build();
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://15.164.76.29:5000")
+                .baseUrl("http://52.78.138.181:8080")
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(okHttpClient)
                 .build();
