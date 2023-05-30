@@ -150,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
             R.drawable.image4, R.drawable.image5, R.drawable.image6,
             R.drawable.image7, R.drawable.wave}; //이미지를 변경하기 위해서 이미지 소스를 배열로 저장
 
+    private int nonSoundCount = 0;
     private Threads threads;
     private ActionThread actionThread;
     private boolean is_running;
@@ -167,6 +168,45 @@ public class MainActivity extends AppCompatActivity {
         map.put(4, "도난경보");
         map.put(5, "비상경보");
     }
+    private void mainscreen(){
+        setContentView(R.layout.home_screen_one);
+
+        background_one = findViewById(R.id.background_one);
+        soundone = findViewById(R.id.soundone);
+        ImageButton imgBtn = (ImageButton) findViewById(R.id.start_btn);
+
+        background_one.setImageResource(R.drawable.wave);
+        soundone.setText("소리 듣는 중...");
+
+        imgBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (!already){
+                    Log.v("한번 클릭", "시작");
+                    //$$$$$$$$$$$$$$$$$$시작이벤트 작성$$$$$$$$$$$$$$$$$$$$$$
+                    Start_Message();
+                }
+            }
+        });
+
+        imgBtn.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                if (already){  //작동중일때만 종료 가능
+                    Log.v("길게누르면", "종료");
+
+                    soundone.setText("화면을 한번 눌러주세요!");
+                    already = !already;
+
+                    //여기에 종료 이벤트 작성
+                    End_Message();
+                }
+                return true;
+            }
+        });
+    }
+
     private boolean data_preprocessing_and_pridiction(String wav_path) throws IOException, WavFileException {
         double spectrum[] = dataPreprocessing.spectrumprocesing(wav_path);
         float meanMFCCValues[][] = dataPreprocessing.mfccprocesing(spectrum);
@@ -399,6 +439,12 @@ public class MainActivity extends AppCompatActivity {
         else{
             File audioFile = new File(audioFilePath);
             audioFile.delete();
+            //다시 원래 화면으로
+            nonSoundCount += 1;
+            if (nonSoundCount == 3){
+                mainscreen();
+                nonSoundCount = 0;
+            }
         }
     }
 
