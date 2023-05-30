@@ -188,7 +188,7 @@ public class MyService extends Service {
         ByteBuffer inputBuffer1 = ByteBuffer.allocateDirect(38400).order(ByteOrder.nativeOrder());
         // 1 * 120 * 80 * 1
         for (int j = 0; j < 120; j++) {
-            for (int k = 0; k < 80; k++) {
+            for (int k = 20; k < 100; k++) {
                 inputBuffer1.putFloat(meanMFCC[j][k]);
             }
         }
@@ -200,7 +200,7 @@ public class MyService extends Service {
         String non = String.format("%.2f", nonsound);
         String check = String.format("%.2f", checksound);
         String s = non + " " + check;
-        Log.v("확인", s);
+        //Log.v("확인", Float.toString(sum) + " " + Float.toString(nonsound) + " " + Float.toString(checksound));
         return checksound - nonsound >= 0.2f;
     }
     private void startRecoding(){
@@ -331,7 +331,7 @@ public class MyService extends Service {
             while (!isCancelled()){
                 try {
                     startRecoding();
-                    Thread.sleep(1800);
+                    Thread.sleep(2000);
                     stopRecoding();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);

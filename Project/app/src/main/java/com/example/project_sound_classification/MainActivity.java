@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
             while (!out_thread){
                 try{
                     startRecoding();
-                    Threads.sleep(1800);
+                    Threads.sleep(2000);
                     stopRecoding();
                 }
                 catch(InterruptedException e){
@@ -147,8 +147,8 @@ public class MainActivity extends AppCompatActivity {
     private float priority_weight[] = {1.0f, 0.8f, 0.6f, 0.4f, 0.2f, 0f};
     private int color[] = {Color.DKGRAY, Color.rgb(0,0,0), Color.CYAN, Color.MAGENTA, Color.RED, Color.YELLOW};
     private int imageSrc [] = {R.drawable.image1, R.drawable.image2,
-            R.drawable.image4, R.drawable.image5, R.drawable.image6,
-            R.drawable.image7, R.drawable.wave}; //이미지를 변경하기 위해서 이미지 소스를 배열로 저장
+            R.drawable.image4, R.drawable.image7, R.drawable.image5,
+            R.drawable.image6, R.drawable.wave}; //이미지를 변경하기 위해서 이미지 소스를 배열로 저장
 
     private Threads threads;
     private ActionThread actionThread;
@@ -163,9 +163,9 @@ public class MainActivity extends AppCompatActivity {
         map.put(0, "차경적");
         map.put(1,"개짓는소리");
         map.put(2, "사이렌");
-        map.put(3,"화재경보");
-        map.put(4, "도난경보");
-        map.put(5, "비상경보");
+        map.put(3,"비상경보");
+        map.put(4, "화재경보");
+        map.put(5, "도난경보");
     }
     private boolean data_preprocessing_and_pridiction(String wav_path) throws IOException, WavFileException {
         double spectrum[] = dataPreprocessing.spectrumprocesing(wav_path);
@@ -188,10 +188,10 @@ public class MainActivity extends AppCompatActivity {
         int probabilityShape[] = tflite.getOutputTensor(probabilityTensorIndex).shape();
         DataType probabilityDataType = tflite.getOutputTensor(probabilityTensorIndex).dataType();
 
-        ByteBuffer inputBuffer1 = ByteBuffer.allocateDirect(57600).order(ByteOrder.nativeOrder());
+        ByteBuffer inputBuffer1 = ByteBuffer.allocateDirect(38400).order(ByteOrder.nativeOrder());
         // 1 * 120 * 80 * 1
         for (int j = 0; j < 120; j++) {
-            for (int k = 0; k < 120; k++) {
+            for (int k = 20; k < 100; k++) {
                 inputBuffer1.putFloat(meanMFCC[j][k]);
             }
         }
@@ -203,6 +203,11 @@ public class MainActivity extends AppCompatActivity {
         String non = String.format("%.2f", nonsound);
         String check = String.format("%.2f", checksound);
         String s = non + " " + check;
+        MainActivity.this.runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
+            }
+        });
         //Log.v("확인", Float.toString(sum) + " " + Float.toString(nonsound) + " " + Float.toString(checksound));
         return checksound - nonsound >= 0.2f;
     }
