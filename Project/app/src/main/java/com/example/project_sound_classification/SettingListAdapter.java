@@ -124,6 +124,8 @@ public class SettingListAdapter extends RecyclerView.Adapter<SettingListAdapter.
                                             Log.v("색상 코드",envelope.getHexCode());
                                             Log.v("인덱스",Integer.toString(getAdapterPosition()));
                                             list_color.setBackgroundColor(envelope.getColor());
+                                            Soundlist changelist = get(getAdapterPosition());
+                                            changelist.color = envelope.getColor();
                                         }
                                     })
                             .setNegativeButton(mContext.getString(R.string.cancel),
