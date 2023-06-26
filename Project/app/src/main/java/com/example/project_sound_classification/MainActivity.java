@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.media.Image;
+import android.media.ImageReader;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -21,6 +22,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -98,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
             while (!out_thread){
                 try{
                     startRecoding();
-                    Threads.sleep(1000);
+                    Threads.sleep(2000);
                     stopRecoding();
                 }
                 catch(InterruptedException e){
@@ -147,8 +150,8 @@ public class MainActivity extends AppCompatActivity {
     private float priority_weight[] = {1.0f, 0.8f, 0.6f, 0.4f, 0.2f, 0f};
     private int color[] = {Color.DKGRAY, Color.rgb(0,0,0), Color.CYAN, Color.MAGENTA, Color.RED, Color.YELLOW};
     private int imageSrc [] = {R.drawable.image1, R.drawable.image2,
-            R.drawable.image4, R.drawable.image5, R.drawable.image6,
-            R.drawable.image7, R.drawable.wave}; //이미지를 변경하기 위해서 이미지 소스를 배열로 저장
+            R.drawable.image4, R.drawable.image7, R.drawable.image5,
+            R.drawable.image6, R.drawable.wave}; //이미지를 변경하기 위해서 이미지 소스를 배열로 저장
 
     private int nonSoundCount = 0;
     private Threads threads;
@@ -156,55 +159,22 @@ public class MainActivity extends AppCompatActivity {
     private boolean is_running;
     private boolean out_thread = false;
     private boolean already = false;
-
     private int mNumFrames;
     private int mSampleRate;
     private int mChannels;
+    private int checksoundcount;
     private void mapping(){
         map.put(0, "차경적");
         map.put(1,"개짓는소리");
         map.put(2, "사이렌");
-        map.put(3,"화재경보");
-        map.put(4, "도난경보");
-        map.put(5, "비상경보");
+        map.put(3,"비상경보");
+        map.put(4, "화재경보");
+        map.put(5, "도난경보");
+    }
+    private void ReturnViewRun(){
+        mainscreen();
     }
     private void mainscreen(){
-        setContentView(R.layout.home_screen_one);
-
-        background_one = findViewById(R.id.background_one);
-        soundone = findViewById(R.id.soundone);
-        ImageButton imgBtn = (ImageButton) findViewById(R.id.start_btn);
-
-        background_one.setImageResource(R.drawable.wave);
-        soundone.setText("소리 듣는 중...");
-
-        imgBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                if (!already){
-                    Log.v("한번 클릭", "시작");
-                    //$$$$$$$$$$$$$$$$$$시작이벤트 작성$$$$$$$$$$$$$$$$$$$$$$
-                    Start_Message();
-                }
-            }
-        });
-
-        imgBtn.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                if (already){  //작동중일때만 종료 가능
-                    Log.v("길게누르면", "종료");
-
-                    soundone.setText("화면을 한번 눌러주세요!");
-                    already = !already;
-
-                    //여기에 종료 이벤트 작성
-                    End_Message();
-                }
-                return true;
-            }
-        });
     }
 
     private boolean data_preprocessing_and_pridiction(String wav_path) throws IOException, WavFileException {
@@ -231,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
         ByteBuffer inputBuffer1 = ByteBuffer.allocateDirect(38400).order(ByteOrder.nativeOrder());
         // 1 * 120 * 80 * 1
         for (int j = 0; j < 120; j++) {
-            for (int k = 0; k < 80; k++) {
+            for (int k = 20; k < 100; k++) {
                 inputBuffer1.putFloat(meanMFCC[j][k]);
             }
         }
@@ -242,11 +212,16 @@ public class MainActivity extends AppCompatActivity {
         float checksound = result[1];
         String non = String.format("%.2f", nonsound);
         String check = String.format("%.2f", checksound);
-        String s = non + " " + check;
+        String s = non + ", " + check;
+        MainActivity.this.runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
+            }
+        });
         //Log.v("확인", Float.toString(sum) + " " + Float.toString(nonsound) + " " + Float.toString(checksound));
         return checksound - nonsound >= 0.2f;
     }
-    private void Weight_calc(float[] softmax) throws JSONException {
+    private void Weight_calc(float[] softmax) throws JSONException, InterruptedException {
         List<Mapping> list = new ArrayList<>();
         for (int i = 0;i<softmax.length;i++)
             if (softmax[i] >= standfloat) {
@@ -267,19 +242,18 @@ public class MainActivity extends AppCompatActivity {
         else if (list.size() == 1)Action(list.get(0).index, -1);
     }
 
-    private void Action(int index, int index2){
+    private void Action(int index, int index2) throws InterruptedException {
         if (index2 != -1) {
             setContentView(R.layout.home_screen);
             background1 = findViewById(R.id.background1);
             background2 = findViewById(R.id.background2);
-
             sound1 = findViewById(R.id.sound1);
             sound2 = findViewById(R.id.sound2);
             ImageButton imgBtn = (ImageButton) findViewById(R.id.start_btn_two);
 
             //--------------------------------------//
-            background1.setBackgroundColor(color[index]);
-            background2.setBackgroundColor(color[index2]);
+            background1.setBackgroundColor(HomeScreen.singleton.getSoundlist()[index].color);
+            background2.setBackgroundColor(HomeScreen.singleton.getSoundlist()[index2].color);
 
             background1.setImageResource(imageSrc[index]);
             background2.setImageResource(imageSrc[index2]);
@@ -322,8 +296,15 @@ public class MainActivity extends AppCompatActivity {
             ImageButton imgBtn = (ImageButton) findViewById(R.id.start_btn);
 
             if (background_one != null) {
-                background_one.setBackgroundColor(color[index]);
+                background_one.setBackgroundColor(HomeScreen.singleton.getSoundlist()[index].color);
                 background_one.setImageResource(imageSrc[index]);
+
+                Animation animation;
+                animation = new AlphaAnimation(0.5f, 1.0f);
+                animation.setDuration(500);
+                animation.setStartOffset(100);
+                background_one.startAnimation(animation);
+
             } else {
                 Log.v("MyActivity", "ImageView is null");
             }
@@ -399,7 +380,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 try {
                     Weight_calc(softmax);
-                } catch (JSONException e) {
+                } catch (JSONException | InterruptedException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -422,6 +403,7 @@ public class MainActivity extends AppCompatActivity {
         audioRecoding.stopRecode();
         String audiopath = audioRecoding.getOutputpath();
         uploadAudioFile(audiopath);
+        background_one.clearAnimation();
     }
     private void uploadAudioFile(String audioFilePath) throws JSONException, IOException, WavFileException {
         boolean create;
@@ -441,8 +423,7 @@ public class MainActivity extends AppCompatActivity {
             audioFile.delete();
             //다시 원래 화면으로
             nonSoundCount += 1;
-            if (nonSoundCount == 3){
-                mainscreen();
+            if (nonSoundCount == 6){
                 nonSoundCount = 0;
             }
         }

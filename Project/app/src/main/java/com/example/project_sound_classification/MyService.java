@@ -105,6 +105,7 @@ public class MyService extends Service {
         map.put(5, "비상경보");
     }
     private boolean data_preprocessing_and_pridiction(String wav_path) throws IOException, WavFileException {
+        Log.v("확인", wav_path);
         double spectrum[] = dataPreprocessing.spectrumprocesing(wav_path);
         float meanMFCCValues[][] = dataPreprocessing.mfccprocesing(spectrum);
         boolean isCheck = loadModdelANDprediction(meanMFCCValues);
@@ -131,7 +132,7 @@ public class MyService extends Service {
         else if (list.size() == 1)Action(list.get(0).index, -1);
     }
     private void Action(int index1, int index2){
-        Log.v("ada", "asdadasd");
+
         NotificationManager manager;
         NotificationCompat.Builder builder;
 
@@ -188,7 +189,7 @@ public class MyService extends Service {
         ByteBuffer inputBuffer1 = ByteBuffer.allocateDirect(38400).order(ByteOrder.nativeOrder());
         // 1 * 120 * 80 * 1
         for (int j = 0; j < 120; j++) {
-            for (int k = 0; k < 80; k++) {
+            for (int k = 20; k < 100; k++) {
                 inputBuffer1.putFloat(meanMFCC[j][k]);
             }
         }
@@ -200,7 +201,7 @@ public class MyService extends Service {
         String non = String.format("%.2f", nonsound);
         String check = String.format("%.2f", checksound);
         String s = non + " " + check;
-        Log.v("확인", s);
+        //Log.v("확인", Float.toString(sum) + " " + Float.toString(nonsound) + " " + Float.toString(checksound));
         return checksound - nonsound >= 0.2f;
     }
     private void startRecoding(){
@@ -249,7 +250,6 @@ public class MyService extends Service {
 
         MyApi myApi = retrofit.create(MyApi.class);
         Call<ApiResponse> call = myApi.uploadAudio(audioPart);
-        Log.v("da","asdada");
         call.enqueue(new Callback<ApiResponse>() {
 
             @Override
@@ -331,7 +331,7 @@ public class MyService extends Service {
             while (!isCancelled()){
                 try {
                     startRecoding();
-                    Thread.sleep(1000);
+                    Thread.sleep(2000);
                     stopRecoding();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);

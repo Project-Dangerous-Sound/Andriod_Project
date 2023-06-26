@@ -15,7 +15,7 @@ public class Singleton {
     DataBase dataBase;
     private Soundlist soundlist[] = new Soundlist[6];
     private int color[] = {Color.DKGRAY, Color.rgb(0,0,0), Color.CYAN, Color.MAGENTA, Color.RED, Color.YELLOW};
-    private String name[] = {"차경적", "개짓는소리", "사이렌", "화재경보", "도난경보", "비상경보"};
+    private String name[] = {"차경적", "개짓는소리", "사이렌", "비상경보", "화재경보", "도난경보"};
     public Singleton(){
         dataBase = new DataBase();
         modelAndBackEnd = new ModelAndBackEnd();
@@ -30,9 +30,9 @@ public class Singleton {
         map.put("차경적", R.drawable.image1);
         map.put("개짓는소리", R.drawable.image2);
         map.put("사이렌", R.drawable.image4);
+        map.put("비상경보", R.drawable.image7);
         map.put("화재경보", R.drawable.image5);
         map.put("도난경보", R.drawable.image6);
-        map.put("비상경보", R.drawable.image7);
     }
     private void BaseSoundPriority(){
         for(int i = 0;i<6;i++){

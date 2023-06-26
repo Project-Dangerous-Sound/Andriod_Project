@@ -72,17 +72,17 @@ public class DataPreprocessing {
             }
         }
 
-        float result[][] = new float[nMFCC][80];
+        float result[][] = new float[nMFCC][120];
         //loop to convert the mfcc values into multi-dimensional array
         if (nFFT < 120){
             for (int i = 0;i<120;i++){
                 for (int j = 0;j<nFFT;j++) result[i][j] = mfccValues[i][j];
-                for (int j = nFFT;j<80 - nFFT;j++) result[i][j] = 0;
+                for (int j = nFFT;j<120 - nFFT;j++) result[i][j] = 0;
             }
         }
         else{
             for (int i = 0;i<120;i++){
-                for (int j = 0;j<80; j++){
+                for (int j = 0;j<120; j++){
                     result[i][j] = mfccValues[i][j];
                 }
             }
